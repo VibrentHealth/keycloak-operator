@@ -90,7 +90,7 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	assert.True(t, *realm.Spec.Realm.EventsEnabled)
 	assert.True(t, *realm.Spec.Realm.AdminEventsEnabled)
 	assert.True(t, *realm.Spec.Realm.AdminEventsDetailsEnabled)
-	assert.Equal(t, map[string]string{"custom": "attribute"}, *&realm.Spec.Realm.Attributes)
+	assert.Equal(t, map[string]string{"custom": "attribute"}, realm.Spec.Realm.Attributes)
 
 	state.Realm = realm
 
