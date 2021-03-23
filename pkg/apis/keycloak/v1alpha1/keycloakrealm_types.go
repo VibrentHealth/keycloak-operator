@@ -69,6 +69,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	AdminEventsDetailsEnabled *bool `json:"adminEventsDetailsEnabled,omitempty"`
 
+	// Attributes
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+
 	// Client scopes
 	// +optional
 	ClientScopes []KeycloakClientScope `json:"clientScopes,omitempty"`
