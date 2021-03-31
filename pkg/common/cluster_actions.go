@@ -26,6 +26,7 @@ type ActionRunner interface {
 	Update(obj runtime.Object) error
 	Delete(obj runtime.Object) error
 	CreateRealm(obj *v1alpha1.KeycloakRealm) error
+	UpdateRealm(obj *v1alpha1.KeycloakRealm) error
 	DeleteRealm(obj *v1alpha1.KeycloakRealm) error
 	CreateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	DeleteClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
@@ -135,6 +136,13 @@ func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
 
 	_, err := i.keycloakClient.CreateRealm(obj)
 	return err
+}
+
+func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform realm update when client is nil")
+	}
+	return i.keycloakClient.UpdateRealm(obj)
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
@@ -427,6 +435,11 @@ type CreateRealmAction struct {
 	Msg string
 }
 
+type UpdateRealmAction struct {
+	Ref *v1alpha1.KeycloakRealm
+	Msg string
+}
+
 type CreateClientAction struct {
 	Ref   *v1alpha1.KeycloakClient
 	Msg   string
@@ -615,6 +628,10 @@ func (i GenericDeleteAction) Run(runner ActionRunner) (string, error) {
 
 func (i CreateRealmAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.CreateRealm(i.Ref)
+}
+
+func (i UpdateRealmAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateRealm(i.Ref)
 }
 
 func (i CreateClientAction) Run(runner ActionRunner) (string, error) {

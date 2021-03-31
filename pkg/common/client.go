@@ -419,7 +419,7 @@ func (c *Client) update(obj T, resourcePath, resourceName string) error {
 }
 
 func (c *Client) UpdateRealm(realm *v1alpha1.KeycloakRealm) error {
-	return c.update(realm, fmt.Sprintf("realms/%s", realm.Spec.Realm.ID), "realm")
+	return c.update(realm.Spec.Realm, fmt.Sprintf("realms/%s", realm.Spec.Realm.ID), "realm")
 }
 
 func (c *Client) UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName string) error {
