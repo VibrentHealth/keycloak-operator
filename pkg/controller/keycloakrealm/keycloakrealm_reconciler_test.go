@@ -57,6 +57,53 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 	}
 }
 
+func getUpdatedRealm() *v1alpha1.KeycloakRealm {
+	return &v1alpha1.KeycloakRealm{
+		Spec: v1alpha1.KeycloakRealmSpec{
+			InstanceSelector: &v1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "keycloak",
+				},
+			},
+			RealmOverrides: []*v1alpha1.RedirectorIdentityProviderOverride{
+				{
+					IdentityProvider: "openshift-v4",
+					ForFlow:          "browser",
+				},
+			},
+			Realm: &v1alpha1.KeycloakAPIRealm{
+				ID:                        "dummy",
+				Realm:                     "dummy",
+				Enabled:                   true,
+				DisplayName:               "updated",
+				EventsEnabled:             &[]bool{false}[0],
+				AdminEventsEnabled:        &[]bool{false}[0],
+				AdminEventsDetailsEnabled: &[]bool{false}[0],
+				Attributes: map[string]string{
+					"custom": "attribute",
+					"second": "added",
+				},
+				Users: []*v1alpha1.KeycloakAPIUser{
+					{
+						ID:        "dummy",
+						UserName:  "dummy",
+						FirstName: "dummy",
+						LastName:  "dummy",
+						Enabled:   true,
+						Credentials: []v1alpha1.KeycloakCredential{
+							{
+								Type:      "password",
+								Value:     "password",
+								Temporary: false,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func getDummyState() *common.RealmState {
 	return &common.RealmState{
 		Realm:            nil,
@@ -97,10 +144,11 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	// Second round: realm is already created
 	desiredState = reconciler.Reconcile(state, realm)
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
+	assert.IsType(t, &common.UpdateRealmAction{}, desiredState[1])
 
 	// The user credential secret still needs to be created because we
 	// did not set it in the state
-	assert.IsType(t, &common.GenericCreateAction{}, desiredState[1])
+	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
 }
 
 func TestKeycloakRealmReconciler_ReconcileRealmDelete(t *testing.T) {
@@ -159,12 +207,22 @@ func TestKeycloakRealmReconciler_Update(t *testing.T) {
 	state.RealmUserSecrets = make(map[string]*v12.Secret)
 	state.RealmUserSecrets[realm.Spec.Realm.Users[0].UserName] = &v12.Secret{}
 
+	//Update Realm Values
+	updatedRealm := getUpdatedRealm()
+
 	// when
-	desiredState := reconciler.Reconcile(state, realm)
+	desiredState := reconciler.Reconcile(state, updatedRealm)
 
 	// then
 	// 0 - check keycloak available
-	// 1 - no other action added
+	// 1 - update realm
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
-	assert.Len(t, desiredState, 1)
+	assert.IsType(t, &common.UpdateRealmAction{}, desiredState[1])
+	assert.Len(t, desiredState, 2)
+	assert.Equal(t, "updated", desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.DisplayName)
+	assert.False(t, *desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.EventsEnabled)
+	assert.False(t, *desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.AdminEventsEnabled)
+	assert.False(t, *desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.AdminEventsDetailsEnabled)
+	assert.Len(t, state.Realm.Spec.Realm.Attributes, 1)
+	assert.Len(t, desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.Attributes, 2)
 }
