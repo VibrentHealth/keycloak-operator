@@ -8,7 +8,7 @@ import (
 )
 
 func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
-	return &v1.Secret{
+	adminSecret := &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      "credential-" + cr.Name,
 			Namespace: cr.Namespace,
@@ -23,6 +23,11 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 		},
 		Type: "Opaque",
 	}
+	if cr.Spec.External.Enabled {
+		adminSecret.Data[AdminUsernameProperty] = []byte(cr.Spec.External.AdminUsername)
+		adminSecret.Data[AdminPasswordProperty] = []byte(cr.Spec.External.AdminPassword)
+	}
+	return adminSecret
 }
 
 func KeycloakAdminSecretSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
