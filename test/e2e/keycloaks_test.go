@@ -70,6 +70,8 @@ func getExternalKeycloakCR(namespace string, url string) *keycloakv1alpha1.Keycl
 	keycloak.Labels = CreateExternalLabel(namespace)
 	keycloak.Spec.External.Enabled = true
 	keycloak.Spec.External.URL = url
+	keycloak.Spec.External.AdminUsername = "username"
+	keycloak.Spec.External.AdminPassword = "password"
 	return keycloak
 }
 
