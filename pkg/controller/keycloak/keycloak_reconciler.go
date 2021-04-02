@@ -26,6 +26,11 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 
 	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
 
+	// Only need KeycloakAdminSecret reconciled for an unmanaged instance
+	if cr.Spec.Unmanaged {
+		return desired
+	}
+
 	if !cr.Spec.DisableMonitoringServices {
 		desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 		desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))

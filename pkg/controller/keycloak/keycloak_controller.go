@@ -161,11 +161,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 	currentState := common.NewClusterState()
 
-	if instance.Spec.Unmanaged {
-		return r.ManageSuccess(instance, currentState)
-	}
-
-	if instance.Spec.External.Enabled {
+	if !instance.Spec.Unmanaged && instance.Spec.External.Enabled {
 		return r.ManageError(instance, errors.Errorf("if external.enabled is true, unmanaged also needs to be true"))
 	}
 
@@ -187,13 +183,15 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	desiredState := reconciler.Reconcile(currentState, instance)
 
 	// Perform migration if needed
-	migrator, err := GetMigrator(instance)
-	if err != nil {
-		return r.ManageError(instance, err)
-	}
-	desiredState, err = migrator.Migrate(instance, currentState, desiredState)
-	if err != nil {
-		return r.ManageError(instance, err)
+	if !instance.Spec.Unmanaged {
+		migrator, err := GetMigrator(instance)
+		if err != nil {
+			return r.ManageError(instance, err)
+		}
+		desiredState, err = migrator.Migrate(instance, currentState, desiredState)
+		if err != nil {
+			return r.ManageError(instance, err)
+		}
 	}
 
 	// Run the actions to reach the desired state
