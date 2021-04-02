@@ -173,6 +173,12 @@ type KeycloakExternal struct {
 	// The URL to use for the keycloak admin API. Needs to be set if external is true.
 	// +optional
 	URL string `json:"url,omitempty"`
+	// The admin username to use for keycloak. Needs to be set if external is true.
+	// +optional
+	AdminUsername string `json:"adminUsername,omitempty"`
+	// The admin password to use for keycloak. Needs to be set if external is true.
+	// +optional
+	AdminPassword string `json:"adminPassword,omitempty"`
 }
 
 type KeycloakExternalAccess struct {

@@ -91,6 +91,31 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakRoute(cr), desiredState[13].(common.GenericCreateAction).Ref)
 }
 
+func TestKeycloakReconciler_Test_Creating_Unmanaged(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Unmanaged = true
+	cr.Spec.External = v1alpha1.KeycloakExternal{
+		Enabled:       true,
+		URL:           "https://external.keycloak",
+		AdminUsername: "username",
+		AdminPassword: "password",
+	}
+
+	currentState := common.NewClusterState()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	// Expectation:
+	//    0) Keycloak Admin Secret
+	assert.Equal(t, 1, len(desiredState))
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
+	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
+}
+
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{
@@ -256,6 +281,46 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakMonitoringService(cr), desiredState[10].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil), desiredState[11].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakMetricsRoute(cr, model.KeycloakRoute(cr)), desiredState[12].(common.GenericUpdateAction).Ref)
+}
+
+func TestKeycloakReconciler_Test_Updating_Unmanaged(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Unmanaged = true
+	cr.Spec.External = v1alpha1.KeycloakExternal{
+		Enabled:       true,
+		URL:           "https://external.keycloak",
+		AdminUsername: "username",
+		AdminPassword: "password",
+	}
+
+	currentState := &common.ClusterState{
+		KeycloakServiceMonitor:          model.ServiceMonitor(cr),
+		KeycloakPrometheusRule:          model.PrometheusRule(cr),
+		KeycloakGrafanaDashboard:        model.GrafanaDashboard(cr),
+		DatabaseSecret:                  model.DatabaseSecret(cr),
+		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
+		PostgresqlService:               model.PostgresqlService(cr, model.DatabaseSecret(cr), false),
+		PostgresqlDeployment:            model.PostgresqlDeployment(cr, true),
+		KeycloakService:                 model.KeycloakService(cr),
+		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
+		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil),
+		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
+		KeycloakRoute:                   model.KeycloakRoute(cr),
+		KeycloakMetricsRoute:            model.KeycloakMetricsRoute(cr, model.KeycloakRoute(cr)),
+		KeycloakProbes:                  model.KeycloakProbes(cr),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	// Expectation:
+	//    0) Keycloak Admin Secret
+	assert.Equal(t, 1, len(desiredState))
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
+	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericUpdateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(t *testing.T) {

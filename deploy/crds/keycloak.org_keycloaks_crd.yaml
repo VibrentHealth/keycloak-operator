@@ -53,6 +53,14 @@ spec:
                       an external instance. The unmanaged field also needs to be set
                       to true if this field is true.
                     type: boolean
+                  adminPassword:
+                    description: The admin password to use for keycloak. Needs to be
+                      set if external is true.
+                    type: string
+                  adminUsername:
+                    description: The admin username to use for keycloak. Needs to be
+                      set if external is true.
+                    type: string
                   url:
                     description: The URL to use for the keycloak admin API. Needs
                       to be set if external is true.
