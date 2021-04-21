@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-operator
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      name: keycloak-operator
+  template:
+    metadata:
+      labels:
+        name: keycloak-operator
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- range $key, $val := .Values.podAnnotations }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end }}
+      {{- end }}  
+    spec:
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+      serviceAccountName: keycloak-operator
+      securityContext:
+        runAsUser: 100 # because 100 is consul-template user id and is allowed to restart the container.
+      imagePullSecrets:
+      - name: {{.Values.image.registry }}
+      containers:
+        - name: keycloak-operator
+          image: "{{.Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command:
+          - keycloak-operator
+          {{- if .Values.debug }}
+          args:
+          - --zap-devel
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: K8S_CLUSTER_IDENTIFIER
+              value: {{ .Values.clusterIdentifier | quote }}
+            - name: WATCH_NAMESPACE
+              value: {{ .Values.watchNamespace }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "keycloak-operator"
