@@ -20,12 +20,12 @@ jobs:
     - name: Unit tests
       run: |
         make test/unit
-    # - name: Run e2e tests
-    #   run: |
-    #     make setup/github
-    #     sudo chown -R $USER $HOME/.kube $HOME/.minikube
-    #     make cluster/prepare 
-    #     make test/e2e
+    - name: Run e2e tests
+      run: |
+        make setup/github
+        sudo chown -R $USER $HOME/.kube $HOME/.minikube
+        make cluster/prepare 
+        make test/e2e
     # - name: Run e2e tests for local image
     #   run: |
     #     make test/e2e-local-image

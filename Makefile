@@ -95,7 +95,7 @@ test/e2e-local-image: cluster/prepare setup/operator-sdk
 	@echo Running e2e tests with a fresh built operator image in the cluster:
 	docker build . -t keycloak-operator:test
 	@echo Running tests:
-	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --operator-namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
