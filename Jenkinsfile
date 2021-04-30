@@ -10,15 +10,15 @@ def charts = []
 def containers = []
 def branch = env.BRANCH_NAME.replace(/\//, '-')
 
-// Only publish the helm chart and image on mergew to master
+// Only publish the helm chart and image on master branch build
 Boolean publishOperator = false
-//if (branch == "master") {
+if (branch == "master") {
     publishOperator = true
   
     containers = [
         ["name": 'vibrent/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
     ]
-//}
+}
 
 podTemplate(
         cloud: 'default',
@@ -29,9 +29,6 @@ podTemplate(
         idleTimeout: 30
 ) {
     node(label) {
-        def stackNameRegex = "[^A-Za-z0-9-]"
-        def stackName = "${env.PROJECT}-${branch}-${env.BUILD_NUMBER}".replaceAll(/(feature-|release-)/, "").replaceAll(stackNameRegex, "-").toLowerCase().take(60)
-        
         ansiColor('xterm') {
             ciPipeline (
                 project: env.PROJECT,
