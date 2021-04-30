@@ -1,7 +1,6 @@
 @Library('acadiaBuildTools@feature/harbor') _
 
 import com.vibrenthealth.jenkinsLibrary.VibrentConstants
-import com.vibrenthealth.jenkinsLibrary.Utils
 
 def project = "keycloak-operator"
 env.PROJECT = project
@@ -13,13 +12,13 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 
 // Only publish the helm chart and image on mergew to master
 Boolean publishOperator = false
-if (env.BRANCH_NAME == "master") {
+//if (branch == "master") {
     publishOperator = true
   
     containers = [
         ["name": 'vibrent/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
     ]
-}
+//}
 
 podTemplate(
         cloud: 'default',
@@ -34,8 +33,6 @@ podTemplate(
         def stackName = "${env.PROJECT}-${branch}-${env.BUILD_NUMBER}".replaceAll(/(feature-|release-)/, "").replaceAll(stackNameRegex, "-").toLowerCase().take(60)
         
         ansiColor('xterm') {
-            def artifacts = []
-            def versions = [env.PROJECT]
             ciPipeline (
                 project: env.PROJECT,
                 ciImages: containers,
