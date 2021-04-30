@@ -88,11 +88,11 @@ func (i *KeycloakRealmReconciler) getDesiredRealmState(state *common.RealmState,
 			Ref: cr,
 			Msg: fmt.Sprintf("create realm %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
 		}
-	} else {
-		return &common.UpdateRealmAction{
-			Ref: cr,
-			Msg: fmt.Sprintf("update realm %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
-		}
+	}
+
+	return &common.UpdateRealmAction{
+		Ref: cr,
+		Msg: fmt.Sprintf("update realm %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
 	}
 }
 
