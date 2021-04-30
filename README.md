@@ -12,6 +12,7 @@ Consider migrating to the [new Keycloak Operator](https://github.com/keycloak/ke
 ## Help and Documentation
 
 The official documentation might be found in the [here](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator).
+The Vibrent documentation can be found [here](https://agile.vignetcorp.com:8086/confluence/display/AC/Keycloak+Operator).
 
 * [Keycloak documentation](https://www.keycloak.org/documentation.html)
 * [User Mailing List](https://groups.google.com/g/keycloak-user) - Mailing list for help and general questions about Keycloak
