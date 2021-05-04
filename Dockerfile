@@ -1,4 +1,3 @@
-#FROM registry.ci.openshift.org/openshift/release:golang-1.13 AS build-env
 FROM harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13 AS build-env
 
 COPY . /src/
@@ -9,7 +8,6 @@ RUN cd /src && \
     echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
 
 # final stage
-#FROM harbor.ssk8s.vibrenthealth.com/registry.access.redhat.com/ubi8/ubi-minimal:latest
 FROM harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
 
 ##LABELS
