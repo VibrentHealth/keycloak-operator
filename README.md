@@ -12,6 +12,9 @@ Vibrent forked the Keycloak Operator to make the following custom changes:
 * Managing Realms on Unmanaged Keycloak instances
 * Creation of a Helm Chart
 
+### Updating Custom Resource Definitions (CRD)
+Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
+
 ### GitHub Actions
 The following three GitHub workflows will run on a PR to Master or a build on Master
 
