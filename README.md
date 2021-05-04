@@ -1,15 +1,41 @@
+# Keycloak Operator
+A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak.
+
+## Vibrent Specific Documentation
+The Vibrent documentation for the keycloak operator can be found at the following conflunece page: [Keycloak Operator](https://agile.vignetcorp.com:8086/confluence/display/AC/Keycloak+Operator).
+
+### Custom Updates
+Vibrent forked the Keycloak Operator to make the following custom changes:
+
+* Support for custom attributes on Realms 
+* Realm update functionality
+* Managing Realms on Unmanaged Keycloak instances
+* Creation of a Helm Chart
+
+### GitHub Actions
+The following three GitHub workflows will run on a PR to Master or a build on Master
+
+1. ci.yml - ensures the tests pass by executing the following makefile commands: test/unit, test/e2e, and test/e2e-local-image
+2. go.yml - ensures the code compiles by executing the following makefile command: code/compile
+3. lint.yml - inspects the code by executing the following makefile commands: setup/linter and code/lint
+
+### Jenkins Pipeline
+The pipeline will lint the Helm Chart anytime it is ran, but will only publish the chart and docker image during a master branch build. Both the chart and docker image will be published to the vibrent-ops project.
+
+Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator. 
+
+## Keycloak Documentation
+All documentation below this point came from the original [keycloak operator repositiory](https://github.com/keycloak/keycloak-operator/blob/master/README.md) on May 3rd, 2021. There may be updates to the README that have not yet been merg3d with Vibrent's repository.
+
 [![Build Status](https://travis-ci.org/keycloak/keycloak-operator.svg?branch=master)](https://travis-ci.org/keycloak/keycloak-operator)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keycloak/keycloak-operator)](https://goreportcard.com/report/github.com/keycloak/keycloak-operator)
 [![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=master)](https://coveralls.io/github/keycloak/keycloak-operator?branch=master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Keycloak Operator
-A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak.
 
 ## Help and Documentation
 
 The official documentation might be found in the [here](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator).
-The Vibrent documentation can be found [here](https://agile.vignetcorp.com:8086/confluence/display/AC/Keycloak+Operator).
 
 * [Keycloak documentation](https://www.keycloak.org/documentation.html)
 * [User Mailing List](https://lists.jboss.org/mailman/listinfo/keycloak-user) - Mailing list for help and general questions about Keycloak
@@ -32,7 +58,19 @@ Please remember to provide a good summary, description as well as steps to repro
 | [KeycloakClient](./deploy/crds/keycloak.org_keycloakclients_crd.yaml) | Represents a client in a keycloak server                 |
 | [KeycloakBackup](./deploy/crds/keycloak.org_keycloakbackups_crd.yaml) | Manage Keycloak database backups                         |
 
-## Deploying to a Cluster
+
+## Deployment to a Kubernetes or Openshift cluster
+
+The official documentation contains installation instruction for this Operator.
+
+[Getting started with keycloak-operator on Openshift](https://www.keycloak.org/getting-started/getting-started-operator-openshift)
+
+[Getting started with keycloak-operator on Kubernetes](https://www.keycloak.org/getting-started/getting-started-operator-kubernetes)
+
+[Operator installation](https://www.keycloak.org/docs/latest/server_installation/index.html#_installing-operator)
+
+
+## Developer Reference
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
 
 1. Run `make cluster/prepare` # This will apply the necessary Custom Resource Definitions (CRDs) and RBAC rules to the clusters
@@ -42,8 +80,6 @@ Please remember to provide a good summary, description as well as steps to repro
 Once the CRDs and RBAC rules are applied and the operator is running. Use the examples from the operator.
 
 1. Run `kubectl apply -f deploy/examples/keycloak/keycloak.yaml`
-
-## Building from Source
 
 ### Local Development
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
@@ -158,6 +194,7 @@ Please bear in mind this is intended to be used for internal purposes as there's
 | `make code/check`         | Checks for linting errors in the code                                            |
 | `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
 | `make code/lint`          | Checks for linting errors in the code                                            |
+| `make client/gen`         | Generates/Updates the clients bases on the CR status and spec definitions        |
 
 #### Application Monitoring
 

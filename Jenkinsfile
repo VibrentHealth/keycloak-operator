@@ -12,13 +12,13 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 
 // Only publish the helm chart and image on master branch build
 Boolean publishOperator = false
-if (branch == "master") {
+//if (branch == "master") {
     publishOperator = true
   
     containers = [
-        ["name": 'vibrent/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
+        ["name": 'vibrent-ops/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
     ]
-}
+//}
 
 podTemplate(
         cloud: 'default',
@@ -38,7 +38,7 @@ podTemplate(
 
                     if (publishOperator) {
                         chartYaml = readYaml file: "${chartDir}/Chart.yaml"
-                        charts << ["chart": "${chartDir}", "version": "${chartYaml.version}", "helmRepo": "vibrent"]
+                        charts << ["chart": "${chartDir}", "version": "${chartYaml.version}", "helmRepo": "vibrent-ops"]
                     }
                 },
                 charts: {
