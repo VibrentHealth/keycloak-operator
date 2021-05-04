@@ -16,13 +16,15 @@ Vibrent forked the Keycloak Operator to make the following custom changes:
 Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
 
 ### GitHub Actions
-The following three GitHub workflows will run on a PR to Master or a build on Master
+Github actions are the primary CI mechanisms used to build and test the keycloak-operator. However, Github is not capable of publishing to our internal docker and helm repositories, so we also have a Jenkinsfile to handle that. See below.
 
 1. ci.yml - ensures the tests pass by executing the following makefile commands: test/unit, test/e2e, and test/e2e-local-image
 2. go.yml - ensures the code compiles by executing the following makefile command: code/compile
 3. lint.yml - inspects the code by executing the following makefile commands: setup/linter and code/lint
 
 ### Jenkins Pipeline
+The Jenkins pipeline is only responsible for publishing the docker container(s) and helm chart for the keycloak operator into our internal docker registry and help chart repository after the github actions perform the other testing activities.
+
 The pipeline will lint the Helm Chart anytime it is ran, but will only publish the chart and docker image during a master branch build. Both the chart and docker image will be published to the vibrent-ops project.
 
 Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator. 
