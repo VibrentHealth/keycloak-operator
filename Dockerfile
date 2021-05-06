@@ -1,5 +1,5 @@
 ARG FIRST_FROM_IMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13
-ARG SECOND_FROM_IOMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
+ARG SECOND_FROM_IMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
 FROM ${FIRST_FROM_IMAGE} AS build-env
 
 COPY . /src/
@@ -10,7 +10,7 @@ RUN cd /src && \
     echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
 
 # final stage
-FROM ${SECOND_FROM_IOMAGE}
+FROM ${SECOND_FROM_IMAGE}
 
 ##LABELS
 
