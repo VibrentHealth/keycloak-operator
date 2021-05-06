@@ -16,7 +16,11 @@ if (branch == "master") {
     publishOperator = true
   
     containers = [
-        ["name": 'vibrent-ops/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
+        ["name": 'vibrent-ops/keycloak-operator',
+         "pathToBuildContext": '',
+         "pathToDockerfile": 'Dockerfile',
+         "buildArgs": ["FIRST_FROM_IMAGE": "harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13",
+                       "SECOND_FROM_IMAGE": "harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest"]]
     ]
 }
 

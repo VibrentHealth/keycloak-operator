@@ -1,5 +1,6 @@
-#FROM harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13 AS build-env
-FROM reg.vibrenthealth.com/vibrent-base/java-11-jdk:PR-10-2779bf1 AS build-env
+ARG FIRST_FROM_IMAGE=registry.ci.openshift.org/openshift/release:golang-1.13
+ARG SECOND_FROM_IOMAGE=registry.access.redhat.com/ubi8/ubi-minimal:latest
+FROM ${FIRST_FROM_IMAGE} AS build-env
 
 COPY . /src/
 
@@ -9,7 +10,7 @@ RUN cd /src && \
     echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
 
 # final stage
-FROM harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
+FROM ${SECOND_FROM_IOMAGE}
 
 ##LABELS
 
