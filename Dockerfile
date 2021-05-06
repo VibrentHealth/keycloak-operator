@@ -1,5 +1,5 @@
-ARG FIRST_FROM_IMAGE=registry.ci.openshift.org/openshift/release:golang-1.13
-ARG SECOND_FROM_IOMAGE=registry.access.redhat.com/ubi8/ubi-minimal:latest
+ARG FIRST_FROM_IMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13
+ARG SECOND_FROM_IOMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
 FROM ${FIRST_FROM_IMAGE} AS build-env
 
 COPY . /src/
