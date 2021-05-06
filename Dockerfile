@@ -1,4 +1,5 @@
-FROM harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13 AS build-env
+#FROM harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13 AS build-env
+FROM reg.vibrenthealth.com/vibrent-base/java-11-jdk:PR-10-2779bf1 AS build-env
 
 COPY . /src/
 

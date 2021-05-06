@@ -43,6 +43,12 @@ jobs:
     #     make cluster/prepare
     #     make test/e2e
     #     make cluster/clean
+    - name: Login to GitHub Packages Docker Registry
+      uses: docker/login-action@v1
+      with:
+        registry: reg.vibrenthealth.com
+        username: vibrent-dev
+        password: sGSv9bhjNwZM
     - name: Run e2e tests for local image
       run: |
         make test/e2e-local-image
