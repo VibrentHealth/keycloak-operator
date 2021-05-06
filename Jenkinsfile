@@ -35,7 +35,7 @@ podTemplate(
             ciPipeline (
                 project: env.PROJECT,
                 ciImages: containers,
-                policyIgnoreList: ["Dockerfile", "build/Dockerfile", "", "build/"],
+                policyIgnoreList: ["", "build/"],
                 checkout: {
                     checkout scm
 
