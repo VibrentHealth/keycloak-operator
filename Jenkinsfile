@@ -16,7 +16,9 @@ if (branch == "master") {
     publishOperator = true
   
     containers = [
-        ["name": 'vibrent-ops/keycloak-operator', "pathToBuildContext": '', "pathToDockerfile": 'Dockerfile']
+        ["name": 'vibrent-ops/keycloak-operator',
+         "pathToBuildContext": '',
+         "pathToDockerfile": 'Dockerfile']
     ]
 }
 
@@ -30,9 +32,11 @@ podTemplate(
 ) {
     node(label) {
         ansiColor('xterm') {
+            // NOTE: we use policyIgnoreList to skip docker policy. See README.md for explanation.
             ciPipeline (
                 project: env.PROJECT,
                 ciImages: containers,
+                policyIgnoreList: ["", "build/"],
                 checkout: {
                     checkout scm
 

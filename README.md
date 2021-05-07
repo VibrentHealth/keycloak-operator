@@ -27,7 +27,19 @@ The Jenkins pipeline is only responsible for publishing the docker container(s) 
 
 The pipeline will lint the Helm Chart anytime it is ran, but will only publish the chart and docker image during a master branch build. Both the chart and docker image will be published to the vibrent-ops project.
 
-Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator. 
+Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator.
+
+We have to do some tricky FROM statements in the Dockerfile because Github actions and Vibrent Jenkins pipelines cannot read from the same registries.
+
+The pipeline has been updated to ignore the Dockerfiles during the 'Validate Docker Policies' step in the 'Compliance Stage'. The docker policy validation fails because the Dockerfile's FROM is dynamically built using an ARG (see Dockerfile below). Even though we use a trusted repository the validation fails stating we must use a trusted repository. 
+
+### Dockerfile
+The Dockerfile used to build the keycloak operator image supports the following two build arguments:
+
+1. FIRST_FROM_IMAGE
+2. SECOND_FROM_IMAGE
+
+The original images, which are still used in the GitHub actions during local e2e testing (see test/e2e-local-image in the makefile), are from a repository that is not trusted by Vibrent's Jenkins pipeline. The Jenkins pipeline uses a Harbor proxy and pulls images from dockerhub. The dockerhub images are used by default if no build arguments are passed.
 
 ## Keycloak Documentation
 All documentation below this point came from the original [keycloak operator repositiory](https://github.com/keycloak/keycloak-operator/blob/master/README.md) on May 3rd, 2021. There may be updates to the README that have not yet been merg3d with Vibrent's repository.
