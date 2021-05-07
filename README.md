@@ -29,6 +29,8 @@ The pipeline will lint the Helm Chart anytime it is ran, but will only publish t
 
 Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator.
 
+We have to do some tricky FROM statements in the Dockerfile because Github actions and Vibrent Jenkins pipelines cannot read from the same registries.
+
 The pipeline has been updated to ignore the Dockerfiles during the 'Validate Docker Policies' step in the 'Compliance Stage'. The docker policy validation fails because the Dockerfile's FROM is dynamically built using an ARG (see Dockerfile below). Even though we use a trusted repository the validation fails stating we must use a trusted repository. 
 
 ### Dockerfile

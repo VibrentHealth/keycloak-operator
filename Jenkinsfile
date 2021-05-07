@@ -32,6 +32,7 @@ podTemplate(
 ) {
     node(label) {
         ansiColor('xterm') {
+            // NOTE: we use policyIgnoreList to skip docker policy. See README.md for explanation.
             ciPipeline (
                 project: env.PROJECT,
                 ciImages: containers,
