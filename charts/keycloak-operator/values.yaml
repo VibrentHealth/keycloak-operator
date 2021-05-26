@@ -9,6 +9,7 @@ image:
   repository: vibrent-ops/keycloak-operator
   tag: test
   pullPolicy: Always
+  imagePullSecrets: reg.vibrenthealth.com
 
 nameOverride: ""
 fullnameOverride: ""
