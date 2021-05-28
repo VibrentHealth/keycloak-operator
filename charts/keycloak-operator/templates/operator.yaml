@@ -34,7 +34,7 @@ spec:
       securityContext:
         runAsUser: 100 # because 100 is consul-template user id and is allowed to restart the container.
       imagePullSecrets:
-      - name: {{.Values.image.registry }}
+      - name: {{.Values.image.imagePullSecrets }}
       containers:
         - name: keycloak-operator
           image: "{{.Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
