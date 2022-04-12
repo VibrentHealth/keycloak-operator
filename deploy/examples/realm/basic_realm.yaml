@@ -9,6 +9,7 @@ spec:
     id: "basic"
     realm: "basic"
     enabled: True
+    userManagedAccessAllowed: True
     displayName: "Basic Realm"
   instanceSelector:
     matchLabels:

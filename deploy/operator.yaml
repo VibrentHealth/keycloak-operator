@@ -22,9 +22,9 @@ spec:
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
+            - name: RELATED_IMAGE_KEYCLOAK
+              value: "quay.io/keycloak/keycloak:16.1.1"
             - name: POD_NAME
               valueFrom:
                 fieldRef:

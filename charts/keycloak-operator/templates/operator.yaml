@@ -49,7 +49,7 @@ spec:
             - name: K8S_CLUSTER_IDENTIFIER
               value: {{ .Values.clusterIdentifier | quote }}
             - name: WATCH_NAMESPACE
-              value: {{ .Values.watchNamespace }}
+              value: ""
             - name: POD_NAME
               valueFrom:
                 fieldRef:
