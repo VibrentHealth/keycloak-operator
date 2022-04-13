@@ -381,143 +381,143 @@ spec:
 #    webAuthnPolicyPasswordlessCreateTimeout: 0
 #    webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister: false
 #    webAuthnPolicyPasswordlessAcceptableAaguids: [ ]
-#    users:
-#      - username: service-account-automation
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: automation
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_KEYCLOAK
-#          - ROLE_AUTOMATION
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          automation:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-color-gem
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: color-gem
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          color-gem:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-drc-internal-client
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: drc-internal-client
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_DRC_INTERNAL
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          drc-internal-client:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-drc-service
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: drc-service
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_DRC
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          drc-service:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-ehr-service
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: ehr-service
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - default-roles-gdeliya_participant_realm-op
-#          - ROLE_FILE_ADMIN
-#        clientRoles:
-#          ehr-service:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-external-data-importer-service
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: external-data-importer-service
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_KEYCLOAK
-#          - default-roles-gdeliya_participant_realm-op
-#          - ROLE_ADMIN
-#        clientRoles:
-#          external-data-importer-service:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-keycloak
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: keycloak
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_KEYCLOAK
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          keycloak:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-pmt-server-api
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: pmt-server-api
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_MC_CATI_INTERVIEWER
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          pmt-server-api:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
-#      - username: service-account-subscriber-server-api
-#        enabled: true
-#        totp: false
-#        emailVerified: false
-#        serviceAccountClientId: subscriber-server-api
-#        disableableCredentialTypes: [ ]
-#        requiredActions: [ ]
-#        realmRoles:
-#          - ROLE_KEYCLOAK
-#          - default-roles-gdeliya_participant_realm-op
-#        clientRoles:
-#          subscriber-server-api:
-#            - uma_protection
-#        notBefore: 0
-#        groups: [ ]
+    users:
+      - username: service-account-automation
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: automation
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_KEYCLOAK
+          - ROLE_AUTOMATION
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          automation:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-color-gem
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: color-gem
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          color-gem:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-drc-internal-client
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: drc-internal-client
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_DRC_INTERNAL
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          drc-internal-client:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-drc-service
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: drc-service
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_DRC
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          drc-service:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-ehr-service
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: ehr-service
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - default-roles-gdeliya_participant_realm-op
+          - ROLE_FILE_ADMIN
+        clientRoles:
+          ehr-service:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-external-data-importer-service
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: external-data-importer-service
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_KEYCLOAK
+          - default-roles-gdeliya_participant_realm-op
+          - ROLE_ADMIN
+        clientRoles:
+          external-data-importer-service:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-keycloak
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: keycloak
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_KEYCLOAK
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          keycloak:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-pmt-server-api
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: pmt-server-api
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_MC_CATI_INTERVIEWER
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          pmt-server-api:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
+      - username: service-account-subscriber-server-api
+        enabled: true
+        totp: false
+        emailVerified: false
+        serviceAccountClientId: subscriber-server-api
+        disableableCredentialTypes: [ ]
+        requiredActions: [ ]
+        realmRoles:
+          - ROLE_KEYCLOAK
+          - default-roles-gdeliya_participant_realm-op
+        clientRoles:
+          subscriber-server-api:
+            - uma_protection
+        notBefore: 0
+        groups: [ ]
 #    scopeMappings:
 #      - clientScope: offline_access
 #        roles:
