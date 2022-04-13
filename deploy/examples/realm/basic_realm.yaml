@@ -58,23 +58,19 @@ spec:
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: uma_authorization
           description: "${role_uma_authorization}"
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_KEYCLOAK
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_AUTOMATION
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_DEACTIVATED_USER
           composite: true
           composites:
@@ -82,22 +78,18 @@ spec:
               - offline_access
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_DRC
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_DRC_INTERNAL
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_MC_CATI_INTERVIEWER
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_USER
           composite: true
           composites:
@@ -105,7 +97,6 @@ spec:
               - offline_access
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: default-roles-gdeliya_participant_realm-op
           description: "${role_default-roles}"
           composite: true
@@ -118,12 +109,10 @@ spec:
                 - manage-account
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_FILE_ADMIN
           composite: false
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
         - name: ROLE_ADMIN
           composite: true
           composites:
@@ -131,7 +120,6 @@ spec:
               - ROLE_FILE_ADMIN
           clientRole: false
           containerId: gdeliya_participant_realm-op
-          attributes: { }
       client:
         subscriber-server-api:
           - name: uma_protection
@@ -142,8 +130,6 @@ spec:
                   - manage-users
                   - view-realm
             clientRole: true
-            containerId: c8d25f27-3952-47fa-96fb-d4b81dbb8076
-            attributes: { }
         keycloak:
           - name: uma_protection
             composite: true
@@ -153,39 +139,27 @@ spec:
                   - manage-users
                   - view-realm
             clientRole: true
-            containerId: 39aa4981-3bc1-4ded-ae9e-a718fb107fdf
-            attributes: { }
         realm-management:
           - name: manage-users
             description: "${role_manage-users}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: create-client
             description: "${role_create-client}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: manage-authorization
             description: "${role_manage-authorization}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: query-clients
             description: "${role_query-clients}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: manage-realm
             description: "${role_manage-realm}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-clients
             description: "${role_view-clients}"
             composite: true
@@ -194,14 +168,10 @@ spec:
                 realm-management:
                   - query-clients
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-events
             description: "${role_view-events}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-users
             description: "${role_view-users}"
             composite: true
@@ -211,50 +181,34 @@ spec:
                   - query-groups
                   - query-users
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-authorization
             description: "${role_view-authorization}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: query-groups
             description: "${role_query-groups}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: query-users
             description: "${role_query-users}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: impersonation
             description: "${role_impersonation}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: query-realms
             description: "${role_query-realms}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-realm
             description: "${role_view-realm}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: manage-identity-providers
             description: "${role_manage-identity-providers}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: realm-admin
             description: "${role_realm-admin}"
             composite: true
@@ -280,46 +234,32 @@ spec:
                   - manage-clients
                   - manage-events
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: view-identity-providers
             description: "${role_view-identity-providers}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: manage-clients
             description: "${role_manage-clients}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
           - name: manage-events
             description: "${role_manage-events}"
             composite: false
             clientRole: true
-            containerId: 6508e2ce-ef2c-448e-a2be-44cc0fd3dadf
-            attributes: { }
         subscriber-android: [ ]
         drc-service:
           - name: uma_protection
             composite: false
             clientRole: true
-            containerId: 9508fac9-a3b6-4188-aeb7-2f256d82a307
-            attributes: { }
         care-evolution: [ ]
         color-gem:
           - name: uma_protection
             composite: false
             clientRole: true
-            containerId: 97de5f64-7a4b-44b5-bad5-ba928f055d09
-            attributes: { }
         external-data-importer-service:
           - name: uma_protection
             composite: false
             clientRole: true
-            containerId: 90084768-e306-49d4-b4d5-2855f7f05504
-            attributes: { }
         security-admin-console: [ ]
         account-console: [ ]
         broker:
@@ -327,8 +267,6 @@ spec:
             description: "${role_read-token}"
             composite: false
             clientRole: true
-            containerId: bb0aff07-ec6a-4ed1-b9e6-00dfda2d6d75
-            attributes: { }
         automation:
           - name: uma_protection
             composite: true
@@ -341,21 +279,16 @@ spec:
                   - view-users
             clientRole: true
             containerId: b92be959-7825-4dcd-94f4-e2e6688379ab
-            attributes: { }
         ehr-service:
           - name: uma_protection
             composite: false
             clientRole: true
-            containerId: 60cae677-7de7-423b-bbd6-338f2ff78946
-            attributes: { }
         admin-cli: [ ]
         subscriber-web: [ ]
         drc-internal-client:
           - name: uma_protection
             composite: false
             clientRole: true
-            containerId: 412fd95e-15ad-408a-bec9-a0cc48ad229e
-            attributes: { }
         pmt-server-api:
           - name: uma_protection
             composite: true
@@ -368,22 +301,16 @@ spec:
                   - view-realm
                   - view-users
             clientRole: true
-            containerId: bd9023ff-41e9-4bd9-8d3b-fe9b03b94def
-            attributes: { }
         subscriber-ios: [ ]
         account:
           - name: view-profile
             description: "${role_view-profile}"
             composite: false
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: delete-account
             description: "${role_delete-account}"
             composite: false
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: manage-consent
             description: "${role_manage-consent}"
             composite: true
@@ -392,26 +319,18 @@ spec:
                 account:
                   - view-consent
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: view-applications
             description: "${role_view-applications}"
             composite: false
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: manage-account-links
             description: "${role_manage-account-links}"
             composite: false
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: view-consent
             description: "${role_view-consent}"
             composite: false
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
           - name: manage-account
             description: "${role_manage-account}"
             composite: true
@@ -420,8 +339,6 @@ spec:
                 account:
                   - manage-account-links
             clientRole: true
-            containerId: f9fd3f74-382a-4a1a-92a1-502dcee44ea6
-            attributes: { }
 #    groups: [ ]
 #    defaultRole:
 #      name: default-roles-gdeliya_participant_realm-op
