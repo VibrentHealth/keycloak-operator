@@ -2533,97 +2533,97 @@ spec:
     adminEventsDetailsEnabled: false
     identityProviders: [ ]
     identityProviderMappers: [ ]
-#    components:
-#      org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy:
-#        - name: Allowed Client Scopes
-#          providerId: allowed-client-templates
-#          subType: authenticated
-#          subComponents: { }
-#          config:
-#            allow-default-scopes:
-#              - 'true'
-#        - name: Full Scope Disabled
-#          providerId: scope
-#          subType: anonymous
-#          subComponents: { }
-#          config: { }
-#        - name: Max Clients Limit
-#          providerId: max-clients
-#          subType: anonymous
-#          subComponents: { }
-#          config:
-#            max-clients:
-#              - '200'
-#        - name: Allowed Protocol Mapper Types
-#          providerId: allowed-protocol-mappers
-#          subType: authenticated
-#          subComponents: { }
-#          config:
-#            allowed-protocol-mapper-types:
-#              - saml-user-property-mapper
-#              - oidc-address-mapper
-#              - oidc-full-name-mapper
-#              - oidc-usermodel-property-mapper
-#              - saml-user-attribute-mapper
-#              - oidc-usermodel-attribute-mapper
-#              - oidc-sha256-pairwise-sub-mapper
-#              - saml-role-list-mapper
-#        - name: Consent Required
-#          providerId: consent-required
-#          subType: anonymous
-#          subComponents: { }
-#          config: { }
-#        - name: Trusted Hosts
-#          providerId: trusted-hosts
-#          subType: anonymous
-#          subComponents: { }
-#          config:
-#            host-sending-registration-request-must-match:
-#              - 'true'
-#            client-uris-must-match:
-#              - 'true'
-#        - name: Allowed Client Scopes
-#          providerId: allowed-client-templates
-#          subType: anonymous
-#          subComponents: { }
-#          config:
-#            allow-default-scopes:
-#              - 'true'
-#        - name: Allowed Protocol Mapper Types
-#          providerId: allowed-protocol-mappers
-#          subType: anonymous
-#          subComponents: { }
-#          config:
-#            allowed-protocol-mapper-types:
-#              - saml-user-property-mapper
-#              - oidc-address-mapper
-#              - oidc-full-name-mapper
-#              - oidc-sha256-pairwise-sub-mapper
-#              - oidc-usermodel-property-mapper
-#              - oidc-usermodel-attribute-mapper
-#              - saml-role-list-mapper
-#              - saml-user-attribute-mapper
-#      org.keycloak.keys.KeyProvider:
-#        - name: hmac-generated
-#          providerId: hmac-generated
-#          subComponents: { }
-#          config:
-#            priority:
-#              - '100'
-#            algorithm:
-#              - HS256
-#        - name: aes-generated
-#          providerId: aes-generated
-#          subComponents: { }
-#          config:
-#            priority:
-#              - '100'
-#        - name: rsa-generated
-#          providerId: rsa-generated
-#          subComponents: { }
-#          config:
-#            priority:
-#              - '100'
+    components:
+      org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy:
+        - name: Allowed Client Scopes
+          providerId: allowed-client-templates
+          subType: authenticated
+          subComponents: { }
+          config:
+            allow-default-scopes:
+              - 'true'
+        - name: Full Scope Disabled
+          providerId: scope
+          subType: anonymous
+          subComponents: { }
+          config: { }
+        - name: Max Clients Limit
+          providerId: max-clients
+          subType: anonymous
+          subComponents: { }
+          config:
+            max-clients:
+              - '200'
+        - name: Allowed Protocol Mapper Types
+          providerId: allowed-protocol-mappers
+          subType: authenticated
+          subComponents: { }
+          config:
+            allowed-protocol-mapper-types:
+              - saml-user-property-mapper
+              - oidc-address-mapper
+              - oidc-full-name-mapper
+              - oidc-usermodel-property-mapper
+              - saml-user-attribute-mapper
+              - oidc-usermodel-attribute-mapper
+              - oidc-sha256-pairwise-sub-mapper
+              - saml-role-list-mapper
+        - name: Consent Required
+          providerId: consent-required
+          subType: anonymous
+          subComponents: { }
+          config: { }
+        - name: Trusted Hosts
+          providerId: trusted-hosts
+          subType: anonymous
+          subComponents: { }
+          config:
+            host-sending-registration-request-must-match:
+              - 'true'
+            client-uris-must-match:
+              - 'true'
+        - name: Allowed Client Scopes
+          providerId: allowed-client-templates
+          subType: anonymous
+          subComponents: { }
+          config:
+            allow-default-scopes:
+              - 'true'
+        - name: Allowed Protocol Mapper Types
+          providerId: allowed-protocol-mappers
+          subType: anonymous
+          subComponents: { }
+          config:
+            allowed-protocol-mapper-types:
+              - saml-user-property-mapper
+              - oidc-address-mapper
+              - oidc-full-name-mapper
+              - oidc-sha256-pairwise-sub-mapper
+              - oidc-usermodel-property-mapper
+              - oidc-usermodel-attribute-mapper
+              - saml-role-list-mapper
+              - saml-user-attribute-mapper
+      org.keycloak.keys.KeyProvider:
+        - name: hmac-generated
+          providerId: hmac-generated
+          subComponents: { }
+          config:
+            priority:
+              - '100'
+            algorithm:
+              - HS256
+        - name: aes-generated
+          providerId: aes-generated
+          subComponents: { }
+          config:
+            priority:
+              - '100'
+        - name: rsa-generated
+          providerId: rsa-generated
+          subComponents: { }
+          config:
+            priority:
+              - '100'
 #    internationalizationEnabled: false
 #    supportedLocales:
 #      - ''
