@@ -2492,47 +2492,47 @@ spec:
       fromDisplayName: ''
       ssl: 'false'
       user: 0db3a12afc6ceb
-#    loginTheme: participant
-#    accountTheme: participant
-#    emailTheme: participant
-#    eventsEnabled: true
-#    eventsExpiration: 2592000
-#    eventsListeners:
-#      - api-post
-#      - login-externalID
-#      - login-locale
-#      - jboss-logging
-#    enabledEventTypes:
-#      - SEND_RESET_PASSWORD
-#      - LOGIN_ERROR
-#      - CLIENT_LOGIN
-#      - RESET_PASSWORD_ERROR
-#      - IMPERSONATE_ERROR
-#      - CODE_TO_TOKEN_ERROR
-#      - CUSTOM_REQUIRED_ACTION
-#      - UPDATE_EMAIL
-#      - REGISTER_ERROR
-#      - LOGOUT_ERROR
-#      - UPDATE_EMAIL_ERROR
-#      - IMPERSONATE
-#      - UPDATE_PROFILE_ERROR
-#      - LOGIN
-#      - UPDATE_PASSWORD_ERROR
-#      - UPDATE_PROFILE
-#      - LOGOUT
-#      - REGISTER
-#      - REFRESH_TOKEN
-#      - UPDATE_PASSWORD
-#      - RESET_PASSWORD
-#      - SEND_RESET_PASSWORD_ERROR
-#      - CLIENT_LOGIN_ERROR
-#      - REFRESH_TOKEN_ERROR
-#      - CUSTOM_REQUIRED_ACTION_ERROR
-#      - CODE_TO_TOKEN
-#    adminEventsEnabled: false
-#    adminEventsDetailsEnabled: false
-#    identityProviders: [ ]
-#    identityProviderMappers: [ ]
+    loginTheme: participant
+    accountTheme: participant
+    emailTheme: participant
+    eventsEnabled: true
+    eventsExpiration: 2592000
+    eventsListeners:
+      - api-post
+      - login-externalID
+      - login-locale
+      - jboss-logging
+    enabledEventTypes:
+      - SEND_RESET_PASSWORD
+      - LOGIN_ERROR
+      - CLIENT_LOGIN
+      - RESET_PASSWORD_ERROR
+      - IMPERSONATE_ERROR
+      - CODE_TO_TOKEN_ERROR
+      - CUSTOM_REQUIRED_ACTION
+      - UPDATE_EMAIL
+      - REGISTER_ERROR
+      - LOGOUT_ERROR
+      - UPDATE_EMAIL_ERROR
+      - IMPERSONATE
+      - UPDATE_PROFILE_ERROR
+      - LOGIN
+      - UPDATE_PASSWORD_ERROR
+      - UPDATE_PROFILE
+      - LOGOUT
+      - REGISTER
+      - REFRESH_TOKEN
+      - UPDATE_PASSWORD
+      - RESET_PASSWORD
+      - SEND_RESET_PASSWORD_ERROR
+      - CLIENT_LOGIN_ERROR
+      - REFRESH_TOKEN_ERROR
+      - CUSTOM_REQUIRED_ACTION_ERROR
+      - CODE_TO_TOKEN
+    adminEventsEnabled: false
+    adminEventsDetailsEnabled: false
+    identityProviders: [ ]
+    identityProviderMappers: [ ]
 #    components:
 #      org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy:
 #        - name: Allowed Client Scopes
