@@ -2462,36 +2462,36 @@ spec:
               claim.name: realm_access.roles
               jsonType.label: String
               multivalued: 'true'
-#    defaultDefaultClientScopes:
-#      - profile
-#      - email
-#      - web-origins
-#      - role_list
-#      - roles
-#    defaultOptionalClientScopes:
-#      - microprofile-jwt
-#      - offline_access
-#      - address
-#      - phone
-#    browserSecurityHeaders:
-#      contentSecurityPolicyReportOnly: ''
-#      xContentTypeOptions: nosniff
-#      xRobotsTag: none
-#      xFrameOptions: SAMEORIGIN
-#      contentSecurityPolicy: frame-src 'self'; frame-ancestors 'self' https://sub-gdeliya.qak8s.vibrenthealth.com;
-#        object-src 'none';
-#      xXSSProtection: 1; mode=block
-#      strictTransportSecurity: max-age=31536000; includeSubDomains
-#    smtpServer:
-#      password: "**********"
-#      starttls: 'true'
-#      auth: 'true'
-#      port: '587'
-#      host: smtp.mailtrap.io
-#      from: info_kube@vibrenthealthtest.com
-#      fromDisplayName: ''
-#      ssl: 'false'
-#      user: 0db3a12afc6ceb
+    defaultDefaultClientScopes:
+      - profile
+      - email
+      - web-origins
+      - role_list
+      - roles
+    defaultOptionalClientScopes:
+      - microprofile-jwt
+      - offline_access
+      - address
+      - phone
+    browserSecurityHeaders:
+      contentSecurityPolicyReportOnly: ''
+      xContentTypeOptions: nosniff
+      xRobotsTag: none
+      xFrameOptions: SAMEORIGIN
+      contentSecurityPolicy: frame-src 'self'; frame-ancestors 'self' https://sub-gdeliya.qak8s.vibrenthealth.com;
+        object-src 'none';
+      xXSSProtection: 1; mode=block
+      strictTransportSecurity: max-age=31536000; includeSubDomains
+    smtpServer:
+      password: "**********"
+      starttls: 'true'
+      auth: 'true'
+      port: '587'
+      host: smtp.mailtrap.io
+      from: info_kube@vibrenthealthtest.com
+      fromDisplayName: ''
+      ssl: 'false'
+      user: 0db3a12afc6ceb
 #    loginTheme: participant
 #    accountTheme: participant
 #    emailTheme: participant
