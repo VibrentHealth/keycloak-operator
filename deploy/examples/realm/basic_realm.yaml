@@ -518,15 +518,15 @@ spec:
             - uma_protection
         notBefore: 0
         groups: [ ]
-#    scopeMappings:
-#      - clientScope: offline_access
-#        roles:
-#          - offline_access
-#    clientScopeMappings:
-#      account:
-#        - client: account-console
-#          roles:
-#            - manage-account
+    scopeMappings:
+      - clientScope: offline_access
+        roles:
+          - offline_access
+    clientScopeMappings:
+      account:
+        - client: account-console
+          roles:
+            - manage-account
 #    clients:
 #      - clientId: account
 #        name: "${client_account}"
