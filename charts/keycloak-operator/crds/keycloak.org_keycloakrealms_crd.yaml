@@ -418,6 +418,17 @@ spec:
                 enabled:
                   description: Realm enabled flag.
                   type: boolean
+                userManagedAccessAllowed:
+                  description: User managed access allowed flag.
+                  type: boolean
+                ssoSessionMaxLifespan:
+                  time:
+                    description: Time
+                    format: int32
+                    type: integer
+                  unit:
+                    description: Max lifespan.
+                    type: string
                 eventsEnabled:
                   description: 'Enable events recording TODO: change to values and
                     use kubebuilder default annotation once supported'
