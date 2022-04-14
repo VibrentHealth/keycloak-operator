@@ -527,1585 +527,1411 @@ spec:
         - client: account-console
           roles:
             - manage-account
-#    clients:
-#      - clientId: account
-#        name: "${client_account}"
-#        rootUrl: "${authBaseUrl}"
-#        baseUrl: "/realms/gdeliya_participant_realm-op/account/"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris:
-#          - "/realms/gdeliya_participant_realm-op/account/*"
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes: { }
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: account-console
-#        name: "${client_account-console}"
-#        rootUrl: "${authBaseUrl}"
-#        baseUrl: "/realms/gdeliya_participant_realm-op/account/"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris:
-#          - "/realms/gdeliya_participant_realm-op/account/*"
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          pkce.code.challenge.method: S256
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        protocolMappers:
-#          - name: audience resolve
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-resolve-mapper
-#            consentRequired: false
-#            config: { }
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: admin-cli
-#        name: "${client_admin-cli}"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: true
-#        serviceAccountsEnabled: false
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes: { }
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: automation
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: true
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: Default Resource
-#              type: urn:automation:resources:default
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: broker
-#        name: "${client_broker}"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: true
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes: { }
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: care-evolution
-#        name: Care Evolution EHR
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris:
-#          - https://allofus-ptsc-dryrun.careevolutionapps.com/test1/HwDashboard.html
-#          - https://allofus-ptsc.careevolutionapps.com/HwDashboard.html
-#          - https://allofus-ptsc-dryrun.careevolutionapps.com/HwDashboard.html
-#          - https://allofus-ptsc-dryrun.careevolutionapps.com/test2/HwDashboard.html
-#        webOrigins:
-#          - https://allofus-ptsc-dryrun.careevolutionapps.com
-#          - https://allofus-ptsc.careevolutionapps.com
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Participant Locale Mapper
-#            protocol: openid-connect
-#            protocolMapper: oidc-usermodel-attribute-mapper
-#            consentRequired: false
-#            config:
-#              userinfo.token.claim: 'true'
-#              user.attribute: locale
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: locale
-#              jsonType.label: String
-#          - name: Participant ID Mapper
-#            protocol: openid-connect
-#            protocolMapper: oidc-usermodel-attribute-mapper
-#            consentRequired: false
-#            config:
-#              userinfo.token.claim: 'true'
-#              user.attribute: PMI_external_id
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: pid
-#              jsonType.label: String
-#        defaultClientScopes: [ ]
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#      - clientId: color-gem
-#        name: Color GEM
-#        description: Color Genetics Engagement Module Web client
-#        rootUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris:
-#          - https://allofus.staging.color.com/*
-#          - https://gp-testing.staging.eks.color.com/*
-#          - https://genomics.joinallofus.org/*
-#          - https://genomics-stb.joinallofus.org/*
-#          - https://gp-testing.use1-a.eks.staging.color.com/*
-#          - https://gp-staging.use1-a.eks.staging.color.com/*
-#          - https://gp.staging.eks.color.com/*
-#        webOrigins:
-#          - https://genomics.joinallofus.org
-#          - https://genomics-stb.joinallofus.org
-#          - https://gp-staging.use1-a.eks.staging.color.com
-#          - https://allofus.staging.color.com
-#          - https://gp-testing.use1-a.eks.staging.color.com
-#          - https://gp-testing.staging.eks.color.com
-#          - https://gp.staging.eks.color.com
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Participant Locale Mapper
-#            protocol: openid-connect
-#            protocolMapper: oidc-usermodel-attribute-mapper
-#            consentRequired: false
-#            config:
-#              userinfo.token.claim: 'true'
-#              user.attribute: locale
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: locale
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Participant ID Mapper
-#            protocol: openid-connect
-#            protocolMapper: oidc-usermodel-attribute-mapper
-#            consentRequired: false
-#            config:
-#              userinfo.token.claim: 'true'
-#              user.attribute: PMI_external_id
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: pid
-#              jsonType.label: String
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#        defaultClientScopes: [ ]
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources: [ ]
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: drc-internal-client
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml*force_name_id*format: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: Default Resource
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: drc-service
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml*force_name_id*format: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#            - name: Default Resource
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: ehr-service
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml*force_name_id*format: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#            - name: Default Resource
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: external-data-importer-service
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml*force_name_id*format: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#            - name: Default Resource
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: keycloak
-#        description: A client allowing keycloak to make secured calls to any external endpoints
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: true
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: Default Resource
-#              type: urn:keycloak:resources:default
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: pmt-server-api
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#            - name: Default Resource
-#              type: urn:pmt-server-api:resources:default
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: realm-management
-#        name: "${client_realm-management}"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: true
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes: { }
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: security-admin-console
-#        name: "${client_security-admin-console}"
-#        rootUrl: "${authAdminUrl}"
-#        baseUrl: "/admin/gdeliya_participant_realm-op/console/"
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        redirectUris:
-#          - "/admin/gdeliya_participant_realm-op/console/*"
-#        webOrigins:
-#          - "+"
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: false
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          pkce.code.challenge.method: S256
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: false
-#        nodeReRegistrationTimeout: 0
-#        protocolMappers:
-#          - name: locale
-#            protocol: openid-connect
-#            protocolMapper: oidc-usermodel-attribute-mapper
-#            consentRequired: false
-#            config:
-#              userinfo.token.claim: 'true'
-#              user.attribute: locale
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: locale
-#              jsonType.label: String
-#        defaultClientScopes: [ ]
-#        optionalClientScopes: [ ]
-#      - clientId: subscriber-android
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris:
-#          - com.acadia.docker://oauth2redirect*
-#          - com.acadia.automation://oauth2redirect*
-#        webOrigins:
-#          - "/*"
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          rememberMe.enabled: 'true'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - registrationMapper
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#      - clientId: subscriber-ios
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris:
-#          - com.vibrent.cricketenterprise://oauth2redirect*
-#          - com.vibrent.crowenterprise://oauth2redirect*
-#          - com.vibrent.pmienterprise://oauth2redirect*
-#          - com.vibrent.kingfisherenterprise://oauth2redirect*
-#          - com.vibrent.lynchenterprise://oauth2redirect*
-#          - com.vibrent.chickadeeenterprise://oauth2redirect*
-#          - com.vibrent.ravenenterprise://oauth2redirect*
-#          - com.vibrent.penguinenterprise://oauth2redirect*
-#          - com.vibrent.goldfinchenterprise://oauth2redirect*
-#          - com.vibrent.pandaenterprise://oauth2redirect*
-#          - com.vibrent.ospreyenterprise://oauth2redirect*
-#          - com.vibrent.finchenterprise://oauth2redirect*
-#          - com.vibrent.orioleenterprise://oauth2redirect*
-#          - com.vibrent.communityenterprise://oauth2redirect*
-#          - com.vibrent.falconenterprise://oauth2redirect*
-#        webOrigins:
-#          - "/*"
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          rememberMe.enabled: 'true'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - registrationMapper
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#      - clientId: subscriber-server-api
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris: [ ]
-#        webOrigins: [ ]
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: false
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: true
-#        serviceAccountsEnabled: true
-#        authorizationServicesEnabled: true
-#        publicClient: false
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
-#        authorizationSettings:
-#          allowRemoteResourceManagement: true
-#          policyEnforcementMode: ENFORCING
-#          resources:
-#            - name: participant
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris: [ ]
-#            - name: Default Resource
-#              type: urn:subscriber-server-api:resources:default
-#              ownerManagedAccess: false
-#              attributes: { }
-#              uris:
-#                - "/*"
-#          policies: [ ]
-#          scopes: [ ]
-#          decisionStrategy: UNANIMOUS
-#      - clientId: subscriber-web
-#        rootUrl: ''
-#        adminUrl: ''
-#        surrogateAuthRequired: false
-#        enabled: true
-#        alwaysDisplayInConsole: false
-#        clientAuthenticatorType: client-secret
-#        secret: "**********"
-#        redirectUris:
-#          - https://twin360-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://data4life-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://childrensstudy-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://covidcare-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://lsregistry-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://participant-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://crick-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://sub-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://provital-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://communitystudy-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://panda-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://allofmaryland-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com/*
-#          - https://together4healthva-gdeliya.qak8s.vibrenthealth.com/*
-#        webOrigins:
-#          - https://participant-gdeliya.qak8s.vibrenthealth.com
-#          - https://communitystudy-gdeliya.qak8s.vibrenthealth.com
-#          - https://together4healthva-gdeliya.qak8s.vibrenthealth.com
-#          - https://crick-gdeliya.qak8s.vibrenthealth.com
-#          - https://twin360-gdeliya.qak8s.vibrenthealth.com
-#          - https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com
-#          - https://covidcare-gdeliya.qak8s.vibrenthealth.com
-#          - https://data4life-gdeliya.qak8s.vibrenthealth.com
-#          - https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com
-#          - https://panda-gdeliya.qak8s.vibrenthealth.com
-#          - https://allofmaryland-gdeliya.qak8s.vibrenthealth.com
-#          - https://childrensstudy-gdeliya.qak8s.vibrenthealth.com
-#          - https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com
-#          - https://lsregistry-gdeliya.qak8s.vibrenthealth.com
-#          - https://provital-gdeliya.qak8s.vibrenthealth.com
-#          - https://sub-gdeliya.qak8s.vibrenthealth.com
-#          - https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com
-#        notBefore: 0
-#        bearerOnly: false
-#        consentRequired: false
-#        standardFlowEnabled: true
-#        implicitFlowEnabled: false
-#        directAccessGrantsEnabled: false
-#        serviceAccountsEnabled: true
-#        publicClient: true
-#        frontchannelLogout: false
-#        protocol: openid-connect
-#        attributes:
-#          saml.assertion.signature: 'false'
-#          saml.force.post.binding: 'false'
-#          saml.multivalued.roles: 'false'
-#          saml.encrypt: 'false'
-#          saml.server.signature: 'false'
-#          saml.server.signature.keyinfo.ext: 'false'
-#          exclude.session.state.from.auth.response: 'false'
-#          saml_force_name_id_format: 'false'
-#          saml.client.signature: 'false'
-#          tls.client.certificate.bound.access.tokens: 'false'
-#          saml.authnstatement: 'false'
-#          display.on.consent.screen: 'false'
-#          saml.onetimeuse.condition: 'false'
-#        authenticationFlowBindingOverrides: { }
-#        fullScopeAllowed: true
-#        nodeReRegistrationTimeout: -1
-#        protocolMappers:
-#          - name: Impersonator Username
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: IMPERSONATOR_USERNAME
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: impersonator.username
-#              jsonType.label: String
-#          - name: Client Host
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientHost
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientHost
-#              jsonType.label: String
-#          - name: Impersonator User ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: IMPERSONATOR_ID
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: impersonator.id
-#              jsonType.label: String
-#          - name: participant
-#            protocol: openid-connect
-#            protocolMapper: oidc-audience-mapper
-#            consentRequired: false
-#            config:
-#              id.token.claim: 'false'
-#              access.token.claim: 'true'
-#              included.custom.audience: participant
-#              userinfo.token.claim: 'false'
-#          - name: Client ID
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientId
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientId
-#              jsonType.label: String
-#          - name: Client IP Address
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: clientAddress
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: clientAddress
-#              jsonType.label: String
-#          - name: Impersonator FullName
-#            protocol: openid-connect
-#            protocolMapper: oidc-usersessionmodel-note-mapper
-#            consentRequired: false
-#            config:
-#              user.session.note: Impersonator FullName
-#              userinfo.token.claim: 'true'
-#              id.token.claim: 'true'
-#              access.token.claim: 'true'
-#              claim.name: impersonator.fullName
-#              jsonType.label: String
-#        defaultClientScopes:
-#          - web-origins
-#          - profile
-#          - roles
-#          - registrationMapper
-#          - email
-#        optionalClientScopes:
-#          - address
-#          - phone
-#          - offline_access
-#          - microprofile-jwt
+    clients:
+      - clientId: automation
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: Default Resource
+              type: urn:automation:resources:default
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: care-evolution
+        name: Care Evolution EHR
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris:
+          - https://allofus-ptsc-dryrun.careevolutionapps.com/test1/HwDashboard.html
+          - https://allofus-ptsc.careevolutionapps.com/HwDashboard.html
+          - https://allofus-ptsc-dryrun.careevolutionapps.com/HwDashboard.html
+          - https://allofus-ptsc-dryrun.careevolutionapps.com/test2/HwDashboard.html
+        webOrigins:
+          - https://allofus-ptsc-dryrun.careevolutionapps.com
+          - https://allofus-ptsc.careevolutionapps.com
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: false
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Participant Locale Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              userinfo.token.claim: 'true'
+              user.attribute: locale
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: locale
+              jsonType.label: String
+          - name: Participant ID Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              userinfo.token.claim: 'true'
+              user.attribute: PMI_external_id
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: pid
+              jsonType.label: String
+        defaultClientScopes: [ ]
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+      - clientId: color-gem
+        name: Color GEM
+        description: Color Genetics Engagement Module Web client
+        rootUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris:
+          - https://allofus.staging.color.com/*
+          - https://gp-testing.staging.eks.color.com/*
+          - https://genomics.joinallofus.org/*
+          - https://genomics-stb.joinallofus.org/*
+          - https://gp-testing.use1-a.eks.staging.color.com/*
+          - https://gp-staging.use1-a.eks.staging.color.com/*
+          - https://gp.staging.eks.color.com/*
+        webOrigins:
+          - https://genomics.joinallofus.org
+          - https://genomics-stb.joinallofus.org
+          - https://gp-staging.use1-a.eks.staging.color.com
+          - https://allofus.staging.color.com
+          - https://gp-testing.use1-a.eks.staging.color.com
+          - https://gp-testing.staging.eks.color.com
+          - https://gp.staging.eks.color.com
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Participant Locale Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              userinfo.token.claim: 'true'
+              user.attribute: locale
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: locale
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Participant ID Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              userinfo.token.claim: 'true'
+              user.attribute: PMI_external_id
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: pid
+              jsonType.label: String
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+        defaultClientScopes: [ ]
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources: [ ]
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: drc-internal-client
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml*force_name_id*format: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: Default Resource
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: drc-service
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml*force_name_id*format: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+            - name: Default Resource
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: ehr-service
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml*force_name_id*format: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+            - name: Default Resource
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: external-data-importer-service
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml*force_name_id*format: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+            - name: Default Resource
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: keycloak
+        description: A client allowing keycloak to make secured calls to any external endpoints
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: Default Resource
+              type: urn:keycloak:resources:default
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: pmt-server-api
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+            - name: Default Resource
+              type: urn:pmt-server-api:resources:default
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: subscriber-android
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris:
+          - com.acadia.docker://oauth2redirect*
+          - com.acadia.automation://oauth2redirect*
+        webOrigins:
+          - "/*"
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        publicClient: true
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          rememberMe.enabled: 'true'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - registrationMapper
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+      - clientId: subscriber-ios
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris:
+          - com.vibrent.cricketenterprise://oauth2redirect*
+          - com.vibrent.crowenterprise://oauth2redirect*
+          - com.vibrent.pmienterprise://oauth2redirect*
+          - com.vibrent.kingfisherenterprise://oauth2redirect*
+          - com.vibrent.lynchenterprise://oauth2redirect*
+          - com.vibrent.chickadeeenterprise://oauth2redirect*
+          - com.vibrent.ravenenterprise://oauth2redirect*
+          - com.vibrent.penguinenterprise://oauth2redirect*
+          - com.vibrent.goldfinchenterprise://oauth2redirect*
+          - com.vibrent.pandaenterprise://oauth2redirect*
+          - com.vibrent.ospreyenterprise://oauth2redirect*
+          - com.vibrent.finchenterprise://oauth2redirect*
+          - com.vibrent.orioleenterprise://oauth2redirect*
+          - com.vibrent.communityenterprise://oauth2redirect*
+          - com.vibrent.falconenterprise://oauth2redirect*
+        webOrigins:
+          - "/*"
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        publicClient: true
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          rememberMe.enabled: 'true'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - registrationMapper
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+      - clientId: subscriber-server-api
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris: [ ]
+        webOrigins: [ ]
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: true
+        publicClient: false
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        authorizationSettings:
+          allowRemoteResourceManagement: true
+          policyEnforcementMode: ENFORCING
+          resources:
+            - name: participant
+              ownerManagedAccess: false
+              attributes: { }
+              uris: [ ]
+            - name: Default Resource
+              type: urn:subscriber-server-api:resources:default
+              ownerManagedAccess: false
+              attributes: { }
+              uris:
+                - "/*"
+          policies: [ ]
+          scopes: [ ]
+          decisionStrategy: UNANIMOUS
+      - clientId: subscriber-web
+        rootUrl: ''
+        adminUrl: ''
+        surrogateAuthRequired: false
+        enabled: true
+        alwaysDisplayInConsole: false
+        clientAuthenticatorType: client-secret
+        secret: "**********"
+        redirectUris:
+          - https://twin360-gdeliya.qak8s.vibrenthealth.com/*
+          - https://data4life-gdeliya.qak8s.vibrenthealth.com/*
+          - https://childrensstudy-gdeliya.qak8s.vibrenthealth.com/*
+          - https://covidcare-gdeliya.qak8s.vibrenthealth.com/*
+          - https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com/*
+          - https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com/*
+          - https://lsregistry-gdeliya.qak8s.vibrenthealth.com/*
+          - https://participant-gdeliya.qak8s.vibrenthealth.com/*
+          - https://crick-gdeliya.qak8s.vibrenthealth.com/*
+          - https://sub-gdeliya.qak8s.vibrenthealth.com/*
+          - https://provital-gdeliya.qak8s.vibrenthealth.com/*
+          - https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com/*
+          - https://communitystudy-gdeliya.qak8s.vibrenthealth.com/*
+          - https://panda-gdeliya.qak8s.vibrenthealth.com/*
+          - https://allofmaryland-gdeliya.qak8s.vibrenthealth.com/*
+          - https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com/*
+          - https://together4healthva-gdeliya.qak8s.vibrenthealth.com/*
+        webOrigins:
+          - https://participant-gdeliya.qak8s.vibrenthealth.com
+          - https://communitystudy-gdeliya.qak8s.vibrenthealth.com
+          - https://together4healthva-gdeliya.qak8s.vibrenthealth.com
+          - https://crick-gdeliya.qak8s.vibrenthealth.com
+          - https://twin360-gdeliya.qak8s.vibrenthealth.com
+          - https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com
+          - https://covidcare-gdeliya.qak8s.vibrenthealth.com
+          - https://data4life-gdeliya.qak8s.vibrenthealth.com
+          - https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com
+          - https://panda-gdeliya.qak8s.vibrenthealth.com
+          - https://allofmaryland-gdeliya.qak8s.vibrenthealth.com
+          - https://childrensstudy-gdeliya.qak8s.vibrenthealth.com
+          - https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com
+          - https://lsregistry-gdeliya.qak8s.vibrenthealth.com
+          - https://provital-gdeliya.qak8s.vibrenthealth.com
+          - https://sub-gdeliya.qak8s.vibrenthealth.com
+          - https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com
+        notBefore: 0
+        bearerOnly: false
+        consentRequired: false
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        publicClient: true
+        frontchannelLogout: false
+        protocol: openid-connect
+        attributes:
+          saml.assertion.signature: 'false'
+          saml.force.post.binding: 'false'
+          saml.multivalued.roles: 'false'
+          saml.encrypt: 'false'
+          saml.server.signature: 'false'
+          saml.server.signature.keyinfo.ext: 'false'
+          exclude.session.state.from.auth.response: 'false'
+          saml_force_name_id_format: 'false'
+          saml.client.signature: 'false'
+          tls.client.certificate.bound.access.tokens: 'false'
+          saml.authnstatement: 'false'
+          display.on.consent.screen: 'false'
+          saml.onetimeuse.condition: 'false'
+        authenticationFlowBindingOverrides: { }
+        fullScopeAllowed: true
+        nodeReRegistrationTimeout: -1
+        protocolMappers:
+          - name: Impersonator Username
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: IMPERSONATOR_USERNAME
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: impersonator.username
+              jsonType.label: String
+          - name: Client Host
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientHost
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientHost
+              jsonType.label: String
+          - name: Impersonator User ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: IMPERSONATOR_ID
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: impersonator.id
+              jsonType.label: String
+          - name: participant
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: 'false'
+              access.token.claim: 'true'
+              included.custom.audience: participant
+              userinfo.token.claim: 'false'
+          - name: Client ID
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientId
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientId
+              jsonType.label: String
+          - name: Client IP Address
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: clientAddress
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: clientAddress
+              jsonType.label: String
+          - name: Impersonator FullName
+            protocol: openid-connect
+            protocolMapper: oidc-usersessionmodel-note-mapper
+            consentRequired: false
+            config:
+              user.session.note: Impersonator FullName
+              userinfo.token.claim: 'true'
+              id.token.claim: 'true'
+              access.token.claim: 'true'
+              claim.name: impersonator.fullName
+              jsonType.label: String
+        defaultClientScopes:
+          - web-origins
+          - profile
+          - roles
+          - registrationMapper
+          - email
+        optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
     clientScopes:
       - name: profile
         description: 'OpenID Connect built-in scope: profile'
