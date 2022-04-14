@@ -348,39 +348,38 @@ spec:
       containerId: gdeliya_participant_realm-op
     requiredCredentials:
       - password
-#    passwordPolicy: length(8) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1)
-#      and hashAlgorithm(bcrypt) and hashIterations(1024)
-#    otpPolicyType: totp
-#    otpPolicyAlgorithm: HmacSHA1
-#    otpPolicyInitialCounter: 0
-#    otpPolicyDigits: 6
-#    otpPolicyLookAheadWindow: 1
-#    otpPolicyPeriod: 30
-#    otpSupportedApplications:
-#      - FreeOTP
-#      - Google Authenticator
-#    webAuthnPolicyRpEntityName: keycloak
-#    webAuthnPolicySignatureAlgorithms:
-#      - ES256
-#    webAuthnPolicyRpId: ''
-#    webAuthnPolicyAttestationConveyancePreference: not specified
-#    webAuthnPolicyAuthenticatorAttachment: not specified
-#    webAuthnPolicyRequireResidentKey: not specified
-#    webAuthnPolicyUserVerificationRequirement: not specified
-#    webAuthnPolicyCreateTimeout: 0
-#    webAuthnPolicyAvoidSameAuthenticatorRegister: false
-#    webAuthnPolicyAcceptableAaguids: [ ]
-#    webAuthnPolicyPasswordlessRpEntityName: keycloak
-#    webAuthnPolicyPasswordlessSignatureAlgorithms:
-#      - ES256
-#    webAuthnPolicyPasswordlessRpId: ''
-#    webAuthnPolicyPasswordlessAttestationConveyancePreference: not specified
-#    webAuthnPolicyPasswordlessAuthenticatorAttachment: not specified
-#    webAuthnPolicyPasswordlessRequireResidentKey: not specified
-#    webAuthnPolicyPasswordlessUserVerificationRequirement: not specified
-#    webAuthnPolicyPasswordlessCreateTimeout: 0
-#    webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister: false
-#    webAuthnPolicyPasswordlessAcceptableAaguids: [ ]
+    passwordPolicy: length(8) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1) and hashAlgorithm(bcrypt) and hashIterations(1024)
+    otpPolicyType: totp
+    otpPolicyAlgorithm: HmacSHA1
+    otpPolicyInitialCounter: 0
+    otpPolicyDigits: 6
+    otpPolicyLookAheadWindow: 1
+    otpPolicyPeriod: 30
+    otpSupportedApplications:
+      - FreeOTP
+      - Google Authenticator
+    webAuthnPolicyRpEntityName: keycloak
+    webAuthnPolicySignatureAlgorithms:
+      - ES256
+    webAuthnPolicyRpId: ''
+    webAuthnPolicyAttestationConveyancePreference: not specified
+    webAuthnPolicyAuthenticatorAttachment: not specified
+    webAuthnPolicyRequireResidentKey: not specified
+    webAuthnPolicyUserVerificationRequirement: not specified
+    webAuthnPolicyCreateTimeout: 0
+    webAuthnPolicyAvoidSameAuthenticatorRegister: false
+    webAuthnPolicyAcceptableAaguids: [ ]
+    webAuthnPolicyPasswordlessRpEntityName: keycloak
+    webAuthnPolicyPasswordlessSignatureAlgorithms:
+      - ES256
+    webAuthnPolicyPasswordlessRpId: ''
+    webAuthnPolicyPasswordlessAttestationConveyancePreference: not specified
+    webAuthnPolicyPasswordlessAuthenticatorAttachment: not specified
+    webAuthnPolicyPasswordlessRequireResidentKey: not specified
+    webAuthnPolicyPasswordlessUserVerificationRequirement: not specified
+    webAuthnPolicyPasswordlessCreateTimeout: 0
+    webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister: false
+    webAuthnPolicyPasswordlessAcceptableAaguids: [ ]
     users:
       - username: service-account-automation
         enabled: true
