@@ -339,15 +339,15 @@ spec:
                 account:
                   - manage-account-links
             clientRole: true
-#    groups: [ ]
-#    defaultRole:
-#      name: default-roles-gdeliya_participant_realm-op
-#      description: "${role_default-roles}"
-#      composite: true
-#      clientRole: false
-#      containerId: gdeliya_participant_realm-op
-#    requiredCredentials:
-#      - password
+    groups: [ ]
+    defaultRole:
+      name: default-roles-gdeliya_participant_realm-op
+      description: "${role_default-roles}"
+      composite: true
+      clientRole: false
+      containerId: gdeliya_participant_realm-op
+    requiredCredentials:
+      - password
 #    passwordPolicy: length(8) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1)
 #      and hashAlgorithm(bcrypt) and hashIterations(1024)
 #    otpPolicyType: totp
