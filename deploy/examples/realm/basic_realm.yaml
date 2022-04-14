@@ -3164,62 +3164,62 @@ spec:
     resetCredentialsFlow: participant reset credentials
     clientAuthenticationFlow: clients
     dockerAuthenticationFlow: docker auth
-#    attributes:
-#      cibaBackchannelTokenDeliveryMode: poll
-#      realmBaseUrl: https://kc-mvaleiras.qak8s.vibrenthealth.com/auth
-#      vnsNotificationEndpointUriPath: "/api/v1/notifications"
-#      clientOfflineSessionIdleTimeout: '0'
-#      enableUserProspect: EAGLE,PANDA
-#      cibaExpiresIn: '120'
-#      falcon_publicUrl: https://together4healthva-gdeliya.qak8s.vibrenthealth.com
-#      accountProvider: VrpFreeMarkerAccountProvider
-#      pmi_publicUrl: https://sub-gdeliya.qak8s.vibrenthealth.com
-#      apiUrl: https://ext-gdeliya.qak8s.vibrenthealth.com
-#      penguin_publicUrl: https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com
-#      disablePhoneRegistration: EAGLE,PANDA
-#      emailTemplateProvider: VrpEmailTemplateProvider
-#      realmUri: "/realms/gdeliya_participant_realm-op"
-#      cibaAuthRequestedUserHint: login_hint
-#      lynch_publicUrl: https://lsregistry-gdeliya.qak8s.vibrenthealth.com
-#      clientSessionIdleTimeout: '0'
-#      goldfinch_publicUrl: https://twin360-gdeliya.qak8s.vibrenthealth.com
-#      raven_publicUrl: https://data4life-gdeliya.qak8s.vibrenthealth.com
-#      loginProvider: VrpFreeMarkerLoginFormsProvider
-#      crick_publicUrl: https://crick-gdeliya.qak8s.vibrenthealth.com
-#      publicAPIUrl: https://sub-gdeliya.qak8s.vibrenthealth.com
-#      oriole_publicUrl: https://allofmaryland-gdeliya.qak8s.vibrenthealth.com
-#      mcRealm: gdeliya_realm
-#      clientSessionMaxLifespan: '0'
-#      eagle_publicUrl: https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com
-#      mcClientSecret: b1a99b93-2c19-4602-ae23-348ab93a2537
-#      finch_publicUrl: https://childrensstudy-gdeliya.qak8s.vibrenthealth.com
-#      osprey_publicUrl: https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com
-#      resendWaitTimeInSecs: '60'
-#      panda_publicUrl: https://panda-gdeliya.qak8s.vibrenthealth.com
-#      covidcare_publicUrl: https://covidcare-gdeliya.qak8s.vibrenthealth.com
-#      emailSenderProvider: VrpEmailSenderProvider
-#      authUri: "/protocol/openid-connect/token"
-#      DAYS_TO_EXPIRE_PASSWORD: '60'
-#      frontendUrl: ''
-#      mcUrl: https://pmt-gdeliya.qak8s.vibrenthealth.com
-#      clientOfflineSessionMaxLifespan: '0'
-#      oauth2DevicePollingInterval: '5'
-#      mcClientID: SUBSCRIBER_KEYCLOAK
-#      condor_publicUrl: https://communitystudy-gdeliya.qak8s.vibrenthealth.com
-#      crow_publicUrl: https://provital-gdeliya.qak8s.vibrenthealth.com
-#      validationMode: 'false'
-#      vnsBaseUrl: https://ext-gdeliya.qak8s.vibrenthealth.com
-#      chickadee_publicUrl: https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com
-#      cibaInterval: '5'
-#      oauth2DeviceCodeLifespan: '600'
-#      parRequestUriLifespan: '60'
-#      DAYS_TO_EXPIRE_PASSWORD_UPDATE_DATE: '1574257442780'
-#    keycloakVersion: 15.0.2.redhat-00001
-#    userManagedAccessAllowed: true
-#    clientProfiles:
-#      profiles: [ ]
-#    clientPolicies:
-#      policies: [ ]
+    attributes:
+      cibaBackchannelTokenDeliveryMode: poll
+      realmBaseUrl: https://kc-mvaleiras.qak8s.vibrenthealth.com/auth
+      vnsNotificationEndpointUriPath: "/api/v1/notifications"
+      clientOfflineSessionIdleTimeout: '0'
+      enableUserProspect: EAGLE,PANDA
+      cibaExpiresIn: '120'
+      falcon_publicUrl: https://together4healthva-gdeliya.qak8s.vibrenthealth.com
+      accountProvider: VrpFreeMarkerAccountProvider
+      pmi_publicUrl: https://sub-gdeliya.qak8s.vibrenthealth.com
+      apiUrl: https://ext-gdeliya.qak8s.vibrenthealth.com
+      penguin_publicUrl: https://digitalhealthsolutions-gdeliya.qak8s.vibrenthealth.com
+      disablePhoneRegistration: EAGLE,PANDA
+      emailTemplateProvider: VrpEmailTemplateProvider
+      realmUri: "/realms/gdeliya_participant_realm-op"
+      cibaAuthRequestedUserHint: login_hint
+      lynch_publicUrl: https://lsregistry-gdeliya.qak8s.vibrenthealth.com
+      clientSessionIdleTimeout: '0'
+      goldfinch_publicUrl: https://twin360-gdeliya.qak8s.vibrenthealth.com
+      raven_publicUrl: https://data4life-gdeliya.qak8s.vibrenthealth.com
+      loginProvider: VrpFreeMarkerLoginFormsProvider
+      crick_publicUrl: https://crick-gdeliya.qak8s.vibrenthealth.com
+      publicAPIUrl: https://sub-gdeliya.qak8s.vibrenthealth.com
+      oriole_publicUrl: https://allofmaryland-gdeliya.qak8s.vibrenthealth.com
+      mcRealm: gdeliya_realm
+      clientSessionMaxLifespan: '0'
+      eagle_publicUrl: https://masonhealthstartshere-gdeliya.qak8s.vibrenthealth.com
+      mcClientSecret: b1a99b93-2c19-4602-ae23-348ab93a2537
+      finch_publicUrl: https://childrensstudy-gdeliya.qak8s.vibrenthealth.com
+      osprey_publicUrl: https://covidsmartstudy-gdeliya.qak8s.vibrenthealth.com
+      resendWaitTimeInSecs: '60'
+      panda_publicUrl: https://panda-gdeliya.qak8s.vibrenthealth.com
+      covidcare_publicUrl: https://covidcare-gdeliya.qak8s.vibrenthealth.com
+      emailSenderProvider: VrpEmailSenderProvider
+      authUri: "/protocol/openid-connect/token"
+      DAYS_TO_EXPIRE_PASSWORD: '60'
+      frontendUrl: ''
+      mcUrl: https://pmt-gdeliya.qak8s.vibrenthealth.com
+      clientOfflineSessionMaxLifespan: '0'
+      oauth2DevicePollingInterval: '5'
+      mcClientID: SUBSCRIBER_KEYCLOAK
+      condor_publicUrl: https://communitystudy-gdeliya.qak8s.vibrenthealth.com
+      crow_publicUrl: https://provital-gdeliya.qak8s.vibrenthealth.com
+      validationMode: 'false'
+      vnsBaseUrl: https://ext-gdeliya.qak8s.vibrenthealth.com
+      chickadee_publicUrl: https://thepromisestudy-gdeliya.qak8s.vibrenthealth.com
+      cibaInterval: '5'
+      oauth2DeviceCodeLifespan: '600'
+      parRequestUriLifespan: '60'
+      DAYS_TO_EXPIRE_PASSWORD_UPDATE_DATE: '1574257442780'
+    keycloakVersion: 15.0.2.redhat-00001
+    userManagedAccessAllowed: true
+    clientProfiles:
+      profiles: [ ]
+    clientPolicies:
+      policies: [ ]
   instanceSelector:
     matchLabels:
       app: sso
