@@ -13,7 +13,7 @@ OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/rel
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
 GOOS=${GOOS:-${GOHOSTOS}}
-GOARCH=${GOACH:-${GOHOSTARCH}}
+GOARCH=${GOARCH:-${GOHOSTARCH}}
 CGO_ENABLED=0
 
 ##############################
@@ -37,7 +37,7 @@ cluster/clean:
 	@kubectl delete -f deploy/role.yaml -n $(NAMESPACE) || true
 	@kubectl delete namespace $(NAMESPACE) || true
 	@kubectl delete -f deploy/crds/ || true
-	
+
 .PHONY: cluster/clean/monitoring
 cluster/clean/monitoring:
 	@kubectl delete -n $(NAMESPACE) --all blackboxtargets
@@ -167,7 +167,7 @@ code/compile:
 .PHONY: code/gen
 code/gen: client/gen
 	operator-sdk generate k8s
-	operator-sdk generate crds --crd-version v1beta1
+	operator-sdk generate crds --crd-version v1
 	# This is a copy-paste part of `operator-sdk generate openapi` command (suggested by the manual)
 	which ./bin/openapi-gen > /dev/null || go build -o ./bin/openapi-gen k8s.io/kube-openapi/cmd/openapi-gen
 	./bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/keycloak/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/keycloak/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"

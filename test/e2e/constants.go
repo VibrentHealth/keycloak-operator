@@ -9,6 +9,7 @@ const (
 	operatorCRName                   = "keycloak-operator"
 	testKeycloakRealmCRName          = "keycloak-realm-test"
 	testKeycloakClientCRName         = "keycloak-client-test"
+	testAuthZKeycloakClientCRName    = "authz-keycloak-client-test"
 	testSecondKeycloakClientCRName   = "second-keycloak-client-test"
 	testExternalKeycloakClientCRName = "external-keycloak-client-test"
 	testKeycloakUserCRName           = "keycloak-user-test"
@@ -16,4 +17,5 @@ const (
 	cleanupTimeout                   = time.Minute * 2
 	pollRetryInterval                = time.Second * 10
 	pollTimeout                      = time.Minute * 10
+	externalPostgresClaim            = "external-postgres-claim"
 )

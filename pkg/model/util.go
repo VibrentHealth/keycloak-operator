@@ -135,7 +135,6 @@ func MergeEnvs(a []v1.EnvVar, b []v1.EnvVar) []v1.EnvVar {
 		found := false
 		for _, aa := range a {
 			if aa.Name == bb.Name {
-				aa.Value = bb.Value
 				found = true
 				break
 			}
@@ -173,4 +172,105 @@ func roleMatches(a v1alpha1.RoleRepresentation, b v1alpha1.RoleRepresentation) b
 		return a.ID == b.ID
 	}
 	return a.Name == b.Name
+}
+
+// FIXME Find a better way to refactor this code with role difference part above
+// returned clientScopes are always from a
+func ClientScopeDifferenceIntersection(a []v1alpha1.KeycloakClientScope, b []v1alpha1.KeycloakClientScope) (d []v1alpha1.KeycloakClientScope, i []v1alpha1.KeycloakClientScope) {
+	for _, clientScope := range a {
+		if hasMatchingClientScope(b, clientScope) {
+			i = append(i, clientScope)
+		} else {
+			d = append(d, clientScope)
+		}
+	}
+	return d, i
+}
+
+func hasMatchingClientScope(clientScopes []v1alpha1.KeycloakClientScope, otherClientScope v1alpha1.KeycloakClientScope) bool {
+	for _, clientScope := range clientScopes {
+		if clientScopeMatches(clientScope, otherClientScope) {
+			return true
+		}
+	}
+	return false
+}
+
+func clientScopeMatches(a v1alpha1.KeycloakClientScope, b v1alpha1.KeycloakClientScope) bool {
+	if a.ID != "" && b.ID != "" {
+		return a.ID == b.ID
+	}
+	return a.Name == b.Name
+}
+
+func FilterClientScopesByNames(clientScopes []v1alpha1.KeycloakClientScope, names []string) (filteredScopes []v1alpha1.KeycloakClientScope) {
+	hashMap := make(map[string]v1alpha1.KeycloakClientScope)
+
+	for _, scope := range clientScopes {
+		hashMap[scope.Name] = scope
+	}
+
+	for _, name := range names {
+		if scope, retrieved := hashMap[name]; retrieved {
+			filteredScopes = append(filteredScopes, scope)
+		}
+	}
+
+	return filteredScopes
+}
+
+func SanitizeResourceNameWithAlphaNum(text string) string {
+	// we only want letters and numbers
+	reg := []rune(SanitizeResourceName(text))
+
+	// we guarantee first and last char is an alpha and not a dot or a dash
+	if !unicode.IsLetter(reg[0]) && !unicode.IsNumber(reg[0]) {
+		reg = append([]rune{'a'}, reg...)
+	}
+	if !unicode.IsLetter(reg[len(reg)-1]) && !unicode.IsNumber(reg[len(reg)-1]) {
+		reg = append(reg, 'a')
+	}
+
+	return string(reg)
+}
+
+func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]string {
+	mergedPodLabels := map[string]string{}
+
+	// We add the labels
+	for key, value := range labels {
+		mergedPodLabels[key] = value
+	}
+
+	// We add the Pod Labels defined in the constants
+	for key, value := range PodLabels {
+		mergedPodLabels[key] = value
+	}
+
+	// We add the PodLabel labels coming from CR Env Vars
+	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodLabels {
+		mergedPodLabels[key] = value
+	}
+
+	return mergedPodLabels
+}
+
+func AddPodAnnotations(cr *v1alpha1.Keycloak, annotations map[string]string) map[string]string {
+	if len(annotations) == 0 {
+		return nil
+	}
+
+	mergedAnnotations := map[string]string{}
+
+	// We add the labels
+	for key, value := range annotations {
+		mergedAnnotations[key] = value
+	}
+
+	// We add the PodLabel labels coming from CR Env Vars
+	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodAnnotations {
+		mergedAnnotations[key] = value
+	}
+
+	return mergedAnnotations
 }

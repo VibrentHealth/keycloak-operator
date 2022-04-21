@@ -56,6 +56,47 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
 }
 
+func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClientID(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "-https://test.dot+hello-goodbye-",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, model.ClientSecretName+"-test", model.ClientSecret(cr).Name)
+}
+
 func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
 	// given
 	keycloakCr := v1alpha1.Keycloak{}
@@ -157,8 +198,11 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
-				ClientID: "test",
-				Secret:   "test",
+				ClientID:                     "test",
+				Secret:                       "test",
+				AuthorizationServicesEnabled: true,
+				DefaultClientScopes:          []string{"profile"},
+				OptionalClientScopes:         []string{"email"},
 			},
 			Roles: []v1alpha1.RoleRepresentation{
 				{ID: "delete_recreateID2", Name: "delete_recreate"},
@@ -190,11 +234,15 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 			{ID: "updateID", Name: "update"},
 			{ID: "renameID", Name: "rename"},
 			{ID: "rename_recreateID", Name: "rename_recreate"},
+			{Name: umaRoleName},
 		},
 		ScopeMappings: &v1alpha1.MappingsRepresentation{
 			ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{"someclient": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}}},
 			RealmMappings:  []v1alpha1.RoleRepresentation{{Name: "ra"}, {Name: "rb"}},
 		},
+		AvailableClientScopes: []v1alpha1.KeycloakClientScope{{Name: "address", ID: "222"}, {Name: "email", ID: "421"}, {Name: "profile", ID: "314"}},
+		DefaultClientScopes:   []v1alpha1.KeycloakClientScope{},
+		OptionalClientScopes:  []v1alpha1.KeycloakClientScope{{Name: "address", ID: "222"}},
 	}
 
 	// when
@@ -234,7 +282,14 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	assert.IsType(t, common.DeleteClientRealmScopeMappingsAction{}, desiredState[12])
 	assert.IsType(t, common.DeleteClientClientScopeMappingsAction{}, desiredState[13])
 
-	assert.Equal(t, 14, len(desiredState))
+	assert.IsType(t, common.UpdateClientDefaultClientScopeAction{}, desiredState[14])
+	assert.Equal(t, "314", desiredState[14].(common.UpdateClientDefaultClientScopeAction).ClientScope.ID)
+	assert.IsType(t, common.UpdateClientOptionalClientScopeAction{}, desiredState[15])
+	assert.Equal(t, "421", desiredState[15].(common.UpdateClientOptionalClientScopeAction).ClientScope.ID)
+	assert.IsType(t, common.DeleteClientOptionalClientScopeAction{}, desiredState[16])
+	assert.Equal(t, "222", desiredState[16].(common.DeleteClientOptionalClientScopeAction).ClientScope.ID)
+
+	assert.Equal(t, 17, len(desiredState))
 }
 
 func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
@@ -304,4 +359,60 @@ func TestKeycloakClientReconciler_Test_ScopeMapping_Difference(t *testing.T) {
 
 	_, ok := d.ClientMappings["clientA"]
 	assert.False(t, ok)
+}
+
+func TestKeycloakClientReconciler_Test_Remove_Client_ID_Client_Secret(t *testing.T) {
+	// given
+	oldSecretName := model.ClientSecretName + "-client-id"
+	newSecretName := model.ClientSecretName + "-cr-name"
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "cr-name",
+			Namespace: "cr-namespace",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "client-id",
+				Secret:   "client-secret",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "realm-name",
+				},
+			},
+		},
+		Client: &v1alpha1.KeycloakAPIClient{},
+		DeprecatedClientSecret: &v1.Secret{
+			ObjectMeta: v13.ObjectMeta{
+				Name: oldSecretName,
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.UpdateClientAction{}, desiredState[1])
+
+	// create new secret using custom resource in name
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, newSecretName, model.ClientSecret(cr).Name)
+
+	// delete existing secret using client id in name
+	assert.IsType(t, common.GenericDeleteAction{}, desiredState[3])
+	assert.IsType(t, model.DeprecatedClientSecret(cr), desiredState[3].(common.GenericDeleteAction).Ref)
+	assert.Equal(t, oldSecretName, desiredState[3].(common.GenericDeleteAction).Ref.(*v1.Secret).Name)
 }

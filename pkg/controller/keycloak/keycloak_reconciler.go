@@ -26,14 +26,16 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 
 	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
 
-	// Only need KeycloakAdminSecret reconciled for an unmanaged instance
-	if cr.Spec.Unmanaged {
-		return desired
-	}
+  // Only need KeycloakAdminSecret reconciled for an unmanaged instance
+  if cr.Spec.Unmanaged {
+    return desired
+  }
 
-	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	if !cr.Spec.DisableMonitoringServices {
+		desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	}
 
 	if !cr.Spec.ExternalDatabase.Enabled {
 		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
@@ -46,6 +48,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakMonitoringServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakProbesDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
@@ -67,12 +70,8 @@ func (i *KeycloakReconciler) reconcileExternalDatabase(desired *common.DesiredCl
 		// set up an endpoints object for the service to send traffic. An externalName
 		// type service won't work in this case. For more details, see https://cloud.google.com/blog/products/gcp/kubernetes-best-practices-mapping-external-services
 		desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
-	} else {
-		// If we have an URI for the external database then we can use a service of
-		// type externalName
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
 	}
+	desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
 }
 
 func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClusterState, clusterState *common.ClusterState, cr *kc.Keycloak) {
@@ -197,6 +196,28 @@ func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterStat
 	}
 }
 
+func (i *KeycloakReconciler) getKeycloakMonitoringServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind)).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceWatchExists {
+		return nil
+	}
+
+	keycloakMonitoringService := model.KeycloakMonitoringService(cr)
+
+	if clusterState.KeycloakMonitoringService == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakMonitoringService,
+			Msg: "Create Keycloak Monitoring Service",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakMonitoringServiceReconciled(cr, clusterState.KeycloakMonitoringService),
+		Msg: "Update keycloak Monitoring Service",
+	}
+}
+
 func (i *KeycloakReconciler) GetKeycloakPrometheusRuleDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	stateManager := common.GetStateManager()
 	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind)).(bool)
@@ -285,11 +306,11 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	isRHSSO := model.Profiles.IsRHSSO(cr)
 
-	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret)
+	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
 	deploymentName := "Keycloak"
 
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret)
+		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
 		deploymentName = model.RHSSOProfile
 	}
 
@@ -300,9 +321,9 @@ func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterSta
 		}
 	}
 
-	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
+	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
 	if isRHSSO {
-		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
+		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
 	}
 
 	return common.GenericUpdateAction{

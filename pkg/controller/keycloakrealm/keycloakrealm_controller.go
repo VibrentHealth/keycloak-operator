@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -37,7 +36,7 @@ var log = logf.Log.WithName(ControllerName)
 
 // Add creates a new KeycloakRealm Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, _ chan schema.GroupVersionKind) error {
+func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
 }
 
@@ -146,7 +145,6 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		}
 
 		// Compute the current state of the realm
-		log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
 		realmState := common.NewRealmState(r.context, keycloak)
 
 		log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",

@@ -11,7 +11,6 @@ import (
 
 	"github.com/keycloak/keycloak-operator/pkg/model"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -27,7 +26,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/pkg/errors"
 
-	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,8 +47,8 @@ const (
 
 // Add creates a new Keycloak Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, autodetectChannel chan schema.GroupVersionKind) error {
-	return add(mgr, newReconciler(mgr), autodetectChannel)
+func Add(mgr manager.Manager) error {
+	return add(mgr, newReconciler(mgr))
 }
 
 // newReconciler returns a new reconcile.Reconciler
@@ -68,7 +67,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan schema.GroupVersionKind) error {
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
 	c, err := controller.New(ControllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -93,7 +92,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 		return err
 	}
 
-	if err := common.WatchSecondaryResource(c, ControllerName, common.IngressKind, &v1beta1.Ingress{}, &kc.Keycloak{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.IngressKind, &networkingv1.Ingress{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
@@ -109,30 +108,21 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 		return err
 	}
 
-	// Setting up a listener for events on the channel from autodetect
-	go func() {
-		for gvk := range autodetectChannel {
-			// Check if this channel event was for the PrometheusRule resource type
-			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PrometheusRuleKind).String() {
-				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.PrometheusRule{}, &kc.Keycloak{}) // nolint
-			}
+	if err := common.WatchSecondaryResource(c, ControllerName, monitoringv1.PrometheusRuleKind, &monitoringv1.PrometheusRule{}, &kc.Keycloak{}); err != nil {
+		return err
+	}
 
-			// Check if this channel event was for the ServiceMonitor resource type
-			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind).String() {
-				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.ServiceMonitor{}, &kc.Keycloak{}) // nolint
-			}
+	if err := common.WatchSecondaryResource(c, ControllerName, monitoringv1.ServiceMonitorsKind, &monitoringv1.ServiceMonitor{}, &kc.Keycloak{}); err != nil {
+		return err
+	}
 
-			// Check if this channel event was for the GrafanaDashboard resource type
-			if gvk.String() == grafanav1alpha1.SchemeGroupVersion.WithKind(grafanav1alpha1.GrafanaDashboardKind).String() {
-				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &grafanav1alpha1.GrafanaDashboard{}, &kc.Keycloak{}) // nolint
-			}
+	if err := common.WatchSecondaryResource(c, ControllerName, grafanav1alpha1.GrafanaDashboardKind, &grafanav1alpha1.GrafanaDashboard{}, &kc.Keycloak{}); err != nil {
+		return err
+	}
 
-			// Check if this channel event was for the Route resource type
-			if gvk.String() == routev1.SchemeGroupVersion.WithKind(common.RouteKind).String() {
-				_ = common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &routev1.Route{}, &kc.Keycloak{})
-			}
-		}
-	}()
+	if err := common.WatchSecondaryResource(c, ControllerName, common.RouteKind, &routev1.Route{}, &kc.Keycloak{}); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -173,6 +163,13 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	if !instance.Spec.Unmanaged && instance.Spec.External.Enabled {
 		return r.ManageError(instance, errors.Errorf("if external.enabled is true, unmanaged also needs to be true"))
+	}
+
+	if instance.Spec.ExternalAccess.Host != "" {
+		isOpenshift, _ := common.GetStateManager().GetState(common.OpenShiftAPIServerKind).(bool)
+		if isOpenshift {
+			return r.ManageError(instance, errors.Errorf("Setting Host in External Access on OpenShift is prohibited"))
+		}
 	}
 
 	// Read current state
@@ -244,16 +241,19 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 		instance.Status.Phase = v1alpha1.PhaseInitialising
 	}
 
-	// Make this keycloaks url public to allow access via the client
-	if currentState.KeycloakRoute != nil && currentState.KeycloakRoute.Spec.Host != "" { //nolint
-		instance.Status.InternalURL = fmt.Sprintf("https://%v", currentState.KeycloakRoute.Spec.Host)
-	} else if currentState.KeycloakIngress != nil && currentState.KeycloakIngress.Spec.Rules[0].Host != "" {
-		instance.Status.InternalURL = fmt.Sprintf("https://%v", currentState.KeycloakIngress.Spec.Rules[0].Host)
-	} else if currentState.KeycloakService != nil && currentState.KeycloakService.Spec.ClusterIP != "" {
+	if currentState.KeycloakService != nil && currentState.KeycloakService.Spec.ClusterIP != "" {
 		instance.Status.InternalURL = fmt.Sprintf("https://%v.%v.svc:%v",
 			currentState.KeycloakService.Name,
 			currentState.KeycloakService.Namespace,
 			model.KeycloakServicePort)
+	}
+
+	if instance.Spec.External.URL != "" { //nolint
+		instance.Status.ExternalURL = instance.Spec.External.URL
+	} else if currentState.KeycloakRoute != nil && currentState.KeycloakRoute.Spec.Host != "" {
+		instance.Status.ExternalURL = fmt.Sprintf("https://%v", currentState.KeycloakRoute.Spec.Host)
+	} else if currentState.KeycloakIngress != nil && currentState.KeycloakIngress.Spec.Rules[0].Host != "" {
+		instance.Status.ExternalURL = fmt.Sprintf("https://%v", currentState.KeycloakIngress.Spec.Rules[0].Host)
 	}
 
 	// Let the clients know where the admin credentials are stored

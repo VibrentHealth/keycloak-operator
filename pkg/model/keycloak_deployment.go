@@ -152,6 +152,10 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
 		},
+		{
+			Name:  "KEYCLOAK_STATISTICS",
+			Value: "all",
+		},
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
@@ -170,39 +174,63 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		env = MergeEnvs(cr.Spec.KeycloakDeploymentSpec.Experimental.Env, env)
 	}
 
+	env = KeycloakSslEnvVariables(dbSecret, env)
+
 	return env
 }
 
-func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
+func KeycloakSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
+	if dbSecret != nil {
+		sslMode := string(dbSecret.Data[DatabaseSecretSslModeProperty])
+
+		if sslMode != "" {
+			dbParams := ""
+			// is the deployment already having JDBC_PARAMS set ?
+			for _, element := range env {
+				if element.Name == KeycloakDatabaseConnectionParamsProperty {
+					dbParams = element.Value + "&"
+					break
+				}
+			}
+			// append env variable
+			env = append(env, v1.EnvVar{
+				Name:  KeycloakDatabaseConnectionParamsProperty,
+				Value: dbParams + "sslmode=" + sslMode + "&sslrootcert=" + KeycloakCertificatePath + "/root.crt",
+			})
+		}
+	}
+	return env
+}
+
+func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
+	labels := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	podLabels := AddPodLabels(cr, labels)
+	podAnnotations := cr.Spec.KeycloakDeploymentSpec.PodAnnotations
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      KeycloakDeploymentName,
-			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app":       ApplicationName,
-				"component": KeycloakDeploymentComponent,
-			},
+			Name:        KeycloakDeploymentName,
+			Namespace:   cr.Namespace,
+			Labels:      podLabels,
+			Annotations: podAnnotations,
 		},
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
-				MatchLabels: map[string]string{
-					"app":       ApplicationName,
-					"component": KeycloakDeploymentComponent,
-				},
+				MatchLabels: labels,
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
-					Name:      KeycloakDeploymentName,
-					Namespace: cr.Namespace,
-					Labels: map[string]string{
-						"app":       ApplicationName,
-						"component": KeycloakDeploymentComponent,
-					},
+					Name:        KeycloakDeploymentName,
+					Namespace:   cr.Namespace,
+					Labels:      podLabels,
+					Annotations: podAnnotations,
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(cr),
+					Volumes:        KeycloakVolumes(cr, dbSSLSecret),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -221,7 +249,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
+							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
 							Env:            getKeycloakEnv(cr, dbSecret),
@@ -230,6 +258,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							Resources:      getResources(cr),
 						},
 					},
+					ServiceAccountName: getServiceAccountName(cr),
 				},
 			},
 		},
@@ -250,11 +279,17 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret) *v13.StatefulSet {
+func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
+
+	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
+	reconciled.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.ObjectMeta.Annotations)
+	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
+	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
+
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
@@ -275,7 +310,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
+			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
 			Env:            getKeycloakEnv(cr, dbSecret),
@@ -290,7 +325,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	return reconciled
 }
 
-func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.VolumeMount {
+func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string, dbSSLSecret *v1.Secret, certificatePath string) []v1.VolumeMount {
 	mountedVolumes := []v1.VolumeMount{
 		{
 			Name:      ServingCertSecretName,
@@ -307,6 +342,14 @@ func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.Vol
 		},
 	}
 
+	if dbSSLSecret != nil {
+		mountedVolumes = append(mountedVolumes, v1.VolumeMount{
+			Name:      DatabaseSecretSslCert + "-vol",
+			ReadOnly:  true,
+			MountPath: certificatePath,
+		})
+	}
+
 	mountedVolumes = addVolumeMountsFromKeycloakCR(cr, mountedVolumes)
 
 	return mountedVolumes
@@ -315,19 +358,17 @@ func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.Vol
 func addVolumeMountsFromKeycloakCR(cr *v1alpha1.Keycloak, mountedVolumes []v1.VolumeMount) []v1.VolumeMount {
 	if cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items != nil {
 		for _, v := range cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items {
-			if v.ConfigMap != nil {
-				configMapMount := v1.VolumeMount{
-					Name:      v.ConfigMap.Name,
-					MountPath: v.ConfigMap.MountPath,
-				}
-				mountedVolumes = append(mountedVolumes, configMapMount)
+			volumeMapMount := v1.VolumeMount{
+				Name:      v.Name,
+				MountPath: v.MountPath,
 			}
+			mountedVolumes = append(mountedVolumes, volumeMapMount)
 		}
 	}
 	return mountedVolumes
 }
 
-func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
+func KeycloakVolumes(cr *v1alpha1.Keycloak, dbSSLSecret *v1.Secret) []v1.Volume {
 	volumes := []v1.Volume{
 		{
 			Name: ServingCertSecretName,
@@ -356,6 +397,17 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
 			},
 		},
 	}
+	if dbSSLSecret != nil {
+		volumes = append(volumes, v1.Volume{
+			Name: DatabaseSecretSslCert + "-vol",
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: DatabaseSecretSslCert,
+					Optional:   &[]bool{false}[0],
+				},
+			},
+		})
+	}
 
 	volumes = addVolumesFromKeycloakCR(cr, volumes)
 
@@ -365,29 +417,42 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
 func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.Volume {
 	if cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items != nil {
 		for _, v := range cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items {
-			// We could also add multiple ProjectedVolumeSources but then we lose the ability
-			// to specify different paths to mount them. This way it's more flexible.
-			if v.ConfigMap != nil {
-				configMapVolume := v1.Volume{
-					Name: v.ConfigMap.Name,
-					VolumeSource: v1.VolumeSource{
-						Projected: &v1.ProjectedVolumeSource{
-							Sources: []v1.VolumeProjection{
-								{
-									ConfigMap: &v1.ConfigMapProjection{
-										LocalObjectReference: v1.LocalObjectReference{
-											Name: v.ConfigMap.Name,
-										},
-										Items: v.ConfigMap.Items,
-									},
-								},
+			var sources []v1.VolumeProjection
+			if v.ConfigMaps != nil {
+				for _, name := range v.ConfigMaps {
+					sources = append(sources, v1.VolumeProjection{
+						ConfigMap: &v1.ConfigMapProjection{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: name,
 							},
-							DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+							Items: v.Items,
 						},
-					},
+					})
 				}
-				volumes = append(volumes, configMapVolume)
 			}
+			if v.Secrets != nil {
+				for _, name := range v.Secrets {
+					sources = append(sources, v1.VolumeProjection{
+						Secret: &v1.SecretProjection{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: name,
+							},
+							Items: v.Items,
+						},
+					})
+				}
+			}
+
+			mapVolume := v1.Volume{
+				Name: v.Name,
+				VolumeSource: v1.VolumeSource{
+					Projected: &v1.ProjectedVolumeSource{
+						Sources:     sources,
+						DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+					},
+				},
+			}
+			volumes = append(volumes, mapVolume)
 		}
 	}
 	return volumes
@@ -470,4 +535,11 @@ func KeycloakPodAffinity(cr *v1alpha1.Keycloak) *v1.Affinity {
 			},
 		},
 	}
+}
+
+func getServiceAccountName(cr *v1alpha1.Keycloak) string {
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName == "" {
+		return "default"
+	}
+	return cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 }

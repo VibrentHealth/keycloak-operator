@@ -54,7 +54,7 @@ func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, ke
 
 func MakeAuthenticatedClient(keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
 	keycloakFactory := common.LocalConfigKeycloakFactory{}
-	return keycloakFactory.AuthenticatedClient(keycloakCR)
+	return keycloakFactory.AuthenticatedClient(keycloakCR, true)
 }
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
@@ -71,6 +71,22 @@ func WaitForStatefulSetReplicasReady(t *testing.T, c kubernetes.Interface, state
 			return nil
 		}
 		return errors.Errorf("statefulSet %s found but there are %d ready replicas and %d total replicas", statefulSetName, sts.Status.ReadyReplicas, *sts.Spec.Replicas)
+	})
+}
+
+func WaitForPodHavingLabels(t *testing.T, c kubernetes.Interface, podName, ns string, labels map[string]string) error {
+	t.Logf("waiting up to %v for Pod %s to have all labels expected", pollTimeout, podName)
+	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
+		pod, err := c.CoreV1().Pods(ns).Get(context.TODO(), podName, metav1.GetOptions{})
+		if err != nil {
+			return errors.Errorf("get Pod %s failed, ignoring for %v: %v", podName, pollRetryInterval, err)
+		}
+		for key := range labels {
+			if _, ok := pod.Labels[key]; !ok {
+				return errors.Errorf("Pod %s doesn't have %s label, ignoring for %v: %v", podName, key, pollRetryInterval, err)
+			}
+		}
+		return nil
 	})
 }
 
@@ -269,9 +285,25 @@ func Delete(f *framework.Framework, obj runtime.Object) error {
 }
 
 func CreateLabel(namespace string) map[string]string {
-	return map[string]string{"app": "keycloak-in-" + namespace}
+	return map[string]string{"app": "kc-in-" + namespace}
 }
 
 func CreateExternalLabel(namespace string) map[string]string {
-	return map[string]string{"app": "external-keycloak-in-" + namespace}
+	return map[string]string{"app": "ext-kc-in-" + namespace}
+}
+
+func GetSuccessfulResponseBody(url string) ([]byte, error) {
+	client := &http.Client{}
+	response, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	ret, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
