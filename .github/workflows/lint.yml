@@ -1,13 +1,5 @@
 name: Lint
-on: 
-  push:
-    branches: 
-      - master
-      - release/*
-  pull_request:
-    branches: 
-      - master
-      - release/*
+on: [push, pull_request]
 jobs:
   golangci:
     name: lint
