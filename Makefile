@@ -99,7 +99,7 @@ test/e2e-local-image: setup/operator-sdk
 	@cp deploy/operator.yaml deploy/operator.yaml_bckp
 	@echo Building operator image:
 	eval $$(minikube -p minikube docker-env); \
-	docker build -t keycloak-operator:test --build-arg FIRST_FROM_IMAGE=registry.ci.openshift.org/openshift/release:golang-1.13 --build-arg SECOND_FROM_IMAGE=registry.access.redhat.com/ubi8/ubi-minimal:latest .
+	docker build . -t keycloak-operator:test
 	@echo Modifying operator.yaml
 	@sed -i 's/imagePullPolicy: Always/imagePullPolicy: Never/g' deploy/operator.yaml
 	@echo Creating namespace
