@@ -304,7 +304,7 @@ func TestKeycloakReconciler_Test_Updating_Unmanaged(t *testing.T) {
 		PostgresqlDeployment:            model.PostgresqlDeployment(cr, true),
 		KeycloakService:                 model.KeycloakService(cr),
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
-		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr)),
+		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakRoute:                   model.KeycloakRoute(cr),
 		KeycloakMetricsRoute:            model.KeycloakMetricsRoute(cr, model.KeycloakRoute(cr)),
