@@ -55,20 +55,17 @@ func schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref common.ReferenceCallback) co
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakStatus"),
 						},
 					},
 				},
@@ -136,20 +133,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackup(ref common.ReferenceCallba
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupStatus"),
 						},
 					},
 				},
@@ -177,7 +171,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupSpec(ref common.ReferenceCa
 					"aws": {
 						SchemaProps: spec.SchemaProps{
 							Description: "If provided, an automatic database backup will be created on AWS S3 instead of a local Persistent Volume. If this property is not provided - a local Persistent Volume backup will be chosen.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakAWSSpec"),
 						},
 					},
@@ -212,7 +205,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref common.Reference
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Current phase of the operator.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -220,7 +212,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref common.Reference
 					"message": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Human-readable message indicating details about current operator phase or error.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -228,7 +219,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref common.Reference
 					"ready": {
 						SchemaProps: spec.SchemaProps{
 							Description: "True if all resources are in a ready state and all work is done.",
-							Default:     false,
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -245,9 +235,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref common.Reference
 										Items: &spec.SchemaOrArray{
 											Schema: &spec.Schema{
 												SchemaProps: spec.SchemaProps{
-													Default: "",
-													Type:    []string{"string"},
-													Format:  "",
+													Type:   []string{"string"},
+													Format: "",
 												},
 											},
 										},
@@ -286,20 +275,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClient(ref common.ReferenceCallba
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakClientSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakClientSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakClientStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakClientStatus"),
 						},
 					},
 				},
@@ -344,8 +330,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("./pkg/apis/keycloak/v1alpha1.RoleRepresentation"),
+										Ref: ref("./pkg/apis/keycloak/v1alpha1.RoleRepresentation"),
 									},
 								},
 							},
@@ -376,7 +361,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientStatus(ref common.Reference
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Current phase of the operator.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -384,7 +368,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientStatus(ref common.Reference
 					"message": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Human-readable message indicating details about current operator phase or error.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -392,7 +375,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientStatus(ref common.Reference
 					"ready": {
 						SchemaProps: spec.SchemaProps{
 							Description: "True if all resources are in a ready state and all work is done.",
-							Default:     false,
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -409,9 +391,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientStatus(ref common.Reference
 										Items: &spec.SchemaOrArray{
 											Schema: &spec.Schema{
 												SchemaProps: spec.SchemaProps{
-													Default: "",
-													Type:    []string{"string"},
-													Format:  "",
+													Type:   []string{"string"},
+													Format: "",
 												},
 											},
 										},
@@ -450,20 +431,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref common.ReferenceCallbac
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus"),
 						},
 					},
 				},
@@ -537,7 +515,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Current phase of the operator.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -545,7 +522,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 					"message": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Human-readable message indicating details about current operator phase or error.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -553,7 +529,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 					"ready": {
 						SchemaProps: spec.SchemaProps{
 							Description: "True if all resources are in a ready state and all work is done.",
-							Default:     false,
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -570,9 +545,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 										Items: &spec.SchemaOrArray{
 											Schema: &spec.Schema{
 												SchemaProps: spec.SchemaProps{
-													Default: "",
-													Type:    []string{"string"},
-													Format:  "",
+													Type:   []string{"string"},
+													Format: "",
 												},
 											},
 										},
@@ -583,9 +557,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 					},
 					"loginURL": {
 						SchemaProps: spec.SchemaProps{
-							Default: "",
-							Type:    []string{"string"},
-							Format:  "",
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
 				},
@@ -612,7 +585,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					"external": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Contains configuration for external Keycloak instances. Unmanaged needs to be set to true to use this.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakExternal"),
 						},
 					},
@@ -628,9 +600,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Default: "",
-										Type:    []string{"string"},
-										Format:  "",
+										Type:   []string{"string"},
+										Format: "",
 									},
 								},
 							},
@@ -646,14 +617,12 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					"externalAccess": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Controls external Ingress/Route settings.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"),
 						},
 					},
 					"externalDatabase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Controls external database settings. Using an external database requires providing a secret containing credentials as well as connection details. Here's an example of such secret:\n\n    apiVersion: v1\n    kind: Secret\n    metadata:\n        name: keycloak-db-secret\n        namespace: keycloak\n    stringData:\n        POSTGRES_DATABASE: <Database Name>\n        POSTGRES_EXTERNAL_ADDRESS: <External Database IP or URL (resolvable by K8s)>\n        POSTGRES_EXTERNAL_PORT: <External Database Port>\n        # Strongly recommended to use <'Keycloak CR Name'-postgresql>\n        POSTGRES_HOST: <Database Service Name>\n        POSTGRES_PASSWORD: <Database Password>\n        # Required for AWS Backup functionality\n        POSTGRES_SUPERUSER: true\n        POSTGRES_USERNAME: <Database Username>\n     type: Opaque\n\nBoth POSTGRES_EXTERNAL_ADDRESS and POSTGRES_EXTERNAL_PORT are specifically required for creating connection to the external database. The secret name is created using the following convention:\n      <Custom Resource Name>-db-secret\n\nFor more information, please refer to the Operator documentation.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakExternalDatabase"),
 						},
 					},
@@ -667,28 +636,24 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					"podDisruptionBudget": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Specify PodDisruptionBudget configuration.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.PodDisruptionBudgetConfig"),
 						},
 					},
 					"keycloakDeploymentSpec": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Resources (Requests and Limits) for KeycloakDeployment.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakDeploymentSpec"),
 						},
 					},
 					"postgresDeploymentSpec": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Resources (Requests and Limits) for PostgresDeployment.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.PostgresqlDeploymentSpec"),
 						},
 					},
 					"migration": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Specify Migration configuration",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.MigrateConfig"),
 						},
 					},
@@ -702,7 +667,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					"multiAvailablityZones": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Specify PodAntiAffinity settings for Keycloak deployment in Multi AZ",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.MultiAvailablityZonesConfig"),
 						},
 					},
@@ -731,7 +695,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Current phase of the operator.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -739,7 +702,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"message": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Human-readable message indicating details about current operator phase or error.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -747,7 +709,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"ready": {
 						SchemaProps: spec.SchemaProps{
 							Description: "True if all resources are in a ready state and all work is done.",
-							Default:     false,
 							Type:        []string{"boolean"},
 							Format:      "",
 						},
@@ -764,9 +725,8 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 										Items: &spec.SchemaOrArray{
 											Schema: &spec.Schema{
 												SchemaProps: spec.SchemaProps{
-													Default: "",
-													Type:    []string{"string"},
-													Format:  "",
+													Type:   []string{"string"},
+													Format: "",
 												},
 											},
 										},
@@ -778,7 +738,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"version": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Version of Keycloak or RHSSO running on the cluster.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -786,7 +745,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"internalURL": {
 						SchemaProps: spec.SchemaProps{
 							Description: "An internal URL (service name) to be used by the admin client.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -801,7 +759,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					"credentialSecret": {
 						SchemaProps: spec.SchemaProps{
 							Description: "The secret where the admin credentials are to be found.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -836,20 +793,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUser(ref common.ReferenceCallback
 					},
 					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
 						},
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakUserSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakUserSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("./pkg/apis/keycloak/v1alpha1.KeycloakUserStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakUserStatus"),
 						},
 					},
 				},
@@ -876,7 +830,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserSpec(ref common.ReferenceCall
 					"user": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Keycloak User REST object.",
-							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakAPIUser"),
 						},
 					},
@@ -899,7 +852,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserStatus(ref common.ReferenceCa
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Current phase of the operator.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -907,7 +859,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserStatus(ref common.ReferenceCa
 					"message": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Human-readable message indicating details about current operator phase or error.",
-							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
 						},
