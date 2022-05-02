@@ -82,6 +82,11 @@ type KeycloakSpec struct {
 	// Specify PodAntiAffinity settings for Keycloak deployment in Multi AZ
 	// +optional
 	MultiAvailablityZones MultiAvailablityZonesConfig `json:"multiAvailablityZones,omitempty"`
+	// Disables the integration with Application Monitoring Operator. When set to true,
+	// the operator doesn't create default PrometheusRule, ServiceMonitor and GrafanaDashboard
+	// objects and users will have to create them manually, if needed.
+	// +optional
+	DisableMonitoringServices bool `json:"DisableDefaultServiceMonitor,omitempty"`
 }
 
 type DeploymentSpec struct {
@@ -92,6 +97,13 @@ type DeploymentSpec struct {
 
 type KeycloakDeploymentSpec struct {
 	DeploymentSpec `json:",inline"`
+	// List of annotations to set in the keycloak pods
+	// +optional
+	PodAnnotations map[string]string `json:"podannotations,omitempty"`
+	// List of labels to set in the keycloak pods
+	// +optional
+	PodLabels map[string]string `json:"podlabels,omitempty"`
+
 	// Experimental section
 	// NOTE: This section might change or get removed without any notice. It may also cause
 	// the deployment to behave in an unpredictable fashion. Please use with care.
@@ -121,6 +133,9 @@ type ExperimentalSpec struct {
 	// Affinity settings
 	//+optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	// ServiceAccountName settings
+	// +optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 type VolumesSpec struct {
@@ -130,20 +145,20 @@ type VolumesSpec struct {
 	DefaultMode *int32 `json:"defaultMode,omitempty"`
 }
 
-type ConfigMapVolumeSpec struct {
-	// ConfigMap name
+type VolumeSpec struct {
+	// Volume name
 	Name string `json:"name,omitempty"`
 	// An absolute path where to mount it
 	MountPath string `json:"mountPath"`
-	// ConfigMap mount details
+	// Allow multiple configmaps to mount to the same directory
+	// +optional
+	ConfigMaps []string `json:"configMaps,omitempty"`
+	// Secret mount
+	// +optional
+	Secrets []string `json:"secrets,omitempty"`
+	// Mount details
 	// +optional
 	Items []corev1.KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
-}
-
-type VolumeSpec struct {
-	// ConfigMap mount
-	// +optional
-	ConfigMap *ConfigMapVolumeSpec `json:"configMap,omitempty"`
 }
 
 type KeycloakExternal struct {
@@ -173,16 +188,16 @@ type KeycloakExternalAccess struct {
 	// Ingress TLS configuration is the same in both cases and it is up to the user
 	// to configure TLS section of the Ingress.
 	TLSTermination TLSTerminationType `json:"tlsTermination,omitempty"`
-	// If set, the Operator will use value of host for Ingress/Route host
-	// instead of default value keycloak.local for ingress and automatically
-	// chosen name for Route
+	// If set, the Operator will use value of host for Ingress host
+	// instead of default value keycloak.local. Using this setting in OpenShift
+	// environment will result an error. Only users with special permissions are
+	// allowed to modify the hostname.
 	// +optional
 	Host string `json:"host,omitempty"`
 }
 
 type KeycloakExternalDatabase struct {
-	// If set to true, the Operator will use an external database.
-	// pointing to Keycloak.
+	// If set to true, the Operator will use an external database pointing to Keycloak. The embedded database (externalDatabase.enabled = false) is deprecated.
 	Enabled bool `json:"enabled,omitempty"`
 }
 
@@ -231,8 +246,10 @@ type KeycloakStatus struct {
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
 	// Version of Keycloak or RHSSO running on the cluster.
 	Version string `json:"version"`
-	// Service IP and Port for in-cluster access to the keycloak instance.
+	// An internal URL (service name) to be used by the admin client.
 	InternalURL string `json:"internalURL"`
+	// External URL for accessing Keycloak instance from outside the cluster. Is identical to external.URL if it's specified, otherwise is computed (e.g. from Ingress).
+	ExternalURL string `json:"externalURL,omitempty"`
 	// The secret where the admin credentials are to be found.
 	CredentialSecret string `json:"credentialSecret"`
 }
@@ -247,6 +264,7 @@ var (
 )
 
 // Keycloak is the Schema for the keycloaks API.
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

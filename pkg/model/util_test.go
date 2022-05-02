@@ -126,3 +126,84 @@ func TestKeycloakClientReconciler_Test_Role_DifferenceIntersection(t *testing.T)
 	assert.Equal(t, expectedDifference, difference)
 	assert.Equal(t, expectedIntersection, intersection)
 }
+
+func TestKeycloakClientReconciler_Test_ClientScope_DifferenceIntersection(t *testing.T) {
+	// given
+	a := []v1alpha1.KeycloakClientScope{
+		{Name: "a"},
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	b := []v1alpha1.KeycloakClientScope{
+		{Name: "b"},
+		{ID: "cID", Name: "differentName"},
+		{Name: "d"},
+	}
+
+	// when
+	difference, intersection := ClientScopeDifferenceIntersection(a, b)
+
+	// then
+	expectedDifference := []v1alpha1.KeycloakClientScope{
+		{Name: "a"},
+	}
+	expectedIntersection := []v1alpha1.KeycloakClientScope{
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	assert.Equal(t, expectedDifference, difference)
+	assert.Equal(t, expectedIntersection, intersection)
+}
+
+func TestPodLabels_When_EnvVars_Then_FullListOfLabels(t *testing.T) {
+	cr := v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				PodLabels: map[string]string{
+					"LabelToTest":       "thisisthelabelvalue",
+					"SecondLabelToTest": "anotherthisisthelabelvalue",
+				},
+			},
+		}}
+
+	PodLabels = map[string]string{
+		"FirstLabel":  "firstLabelValue",
+		"SecondLabel": "secondLabelValue",
+	}
+
+	labels := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	totalLabels := AddPodLabels(&cr, labels)
+	assert.Equal(t, 6, len(totalLabels))
+	assert.Equal(t, 2, len(labels))
+	assert.Contains(t, totalLabels, "LabelToTest")
+	assert.Contains(t, totalLabels, "SecondLabelToTest")
+	assert.Contains(t, totalLabels, "FirstLabel")
+	assert.Contains(t, totalLabels, "SecondLabel")
+	assert.Contains(t, totalLabels, "app")
+	assert.Contains(t, totalLabels, "component")
+}
+func TestPodAnnotations_When_EnvVars_Then_FullListOfAnnotations(t *testing.T) {
+	cr := v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				PodAnnotations: map[string]string{
+					"AnnotationToTest":       "thisistheannotationvalue",
+					"SecondAnnotationToTest": "anotherthisistheannotationvalue",
+				},
+			},
+		}}
+
+	annotations := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	totalAnnotations := AddPodAnnotations(&cr, annotations)
+	assert.Equal(t, 4, len(totalAnnotations))
+	assert.Contains(t, totalAnnotations, "AnnotationToTest")
+	assert.Contains(t, totalAnnotations, "SecondAnnotationToTest")
+	assert.Contains(t, totalAnnotations, "app")
+	assert.Contains(t, totalAnnotations, "component")
+}

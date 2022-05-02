@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -32,7 +31,7 @@ const (
 
 // Add creates a new KeycloakClient Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, _ chan schema.GroupVersionKind) error {
+func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
 }
 
@@ -129,7 +128,7 @@ func (r *ReconcileKeycloakClient) Reconcile(request reconcile.Request) (reconcil
 		for _, keycloak := range keycloaks.Items {
 			// Get an authenticated keycloak api client for the instance
 			keycloakFactory := common.LocalConfigKeycloakFactory{}
-			authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
+			authenticated, err := keycloakFactory.AuthenticatedClient(keycloak, false)
 			if err != nil {
 				return r.ManageError(instance, err)
 			}
@@ -175,6 +174,9 @@ func (r *ReconcileKeycloakClient) adjustCrDefaults(cr *kc.KeycloakClient) {
 	}
 	if cr.Spec.Client.Access == nil {
 		cr.Spec.Client.Access = make(map[string]bool)
+	}
+	if cr.Spec.Client.AuthenticationFlowBindingOverrides == nil {
+		cr.Spec.Client.AuthenticationFlowBindingOverrides = make(map[string]string)
 	}
 }
 

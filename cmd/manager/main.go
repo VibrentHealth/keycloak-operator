@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 
@@ -104,10 +105,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	syncPeriod := time.Minute * 5
+
 	// Set default manager options
 	options := manager.Options{
 		Namespace:          namespace,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		SyncPeriod:         &syncPeriod,
 	}
 
 	// Add support for MultiNamespace set in WATCH_NAMESPACE (e.g ns1,ns2)
@@ -161,7 +165,7 @@ func main() {
 	}
 
 	// Setup all Controllers
-	if err := controller.AddToManager(mgr, autodetect.SubscriptionChannel); err != nil {
+	if err := controller.AddToManager(mgr); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}

@@ -1,11 +1,11 @@
 name: Lint
-on: 
+on:
   push:
-    branches: 
+    branches:
       - master
       - release/*
   pull_request:
-    branches: 
+    branches:
       - master
       - release/*
 jobs:

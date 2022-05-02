@@ -30,10 +30,10 @@ func TestKeycloakCRDS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add custom resource scheme to framework: %v", err)
 	}
-
 	t.Run("KeycloaksCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloaksCRDTestStruct())
 		runTestsFromCRDInterface(t, NewUnmanagedKeycloaksCRDTestStruct())
+		runTestsFromCRDInterface(t, NewKeycloaksWithLabelsCRDTestStruct())
 	})
 	t.Run("KeycloakBackupCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakBackupCRDTestStruct())
@@ -46,6 +46,9 @@ func TestKeycloakCRDS(t *testing.T) {
 	})
 	t.Run("KeycloakClientsCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakClientsCRDTestStruct())
+	})
+	t.Run("KeycloaksSSLTest", func(t *testing.T) {
+		runTestsFromCRDInterface(t, NewKeycloaksSSLTestStruct())
 	})
 }
 
@@ -108,7 +111,7 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 
 			t.Logf("running test %s", testName)
 			if err = testStep.testFunction(t, f, testCTX, namespace); err != nil {
-				t.Logf("test %s failed, cleaning context", testName)
+				t.Logf("test %s failed, cleaning context : %s", testName, err)
 				testCTX.Cleanup()
 				t.Fatal(err)
 			}

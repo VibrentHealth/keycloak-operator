@@ -7,7 +7,7 @@ import (
 	v1beta12 "k8s.io/api/policy/v1beta1"
 
 	v13 "github.com/openshift/api/route/v1"
-	"k8s.io/api/extensions/v1beta1"
+	v14 "k8s.io/api/networking/v1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
@@ -52,14 +52,16 @@ type ClusterState struct {
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *grafanav1alpha1.GrafanaDashboard
 	DatabaseSecret                  *v1.Secret
+	DatabaseSSLCert                 *v1.Secret
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service
 	PostgresqlDeployment            *v12.Deployment
 	KeycloakService                 *v1.Service
 	KeycloakDiscoveryService        *v1.Service
+	KeycloakMonitoringService       *v1.Service
 	KeycloakDeployment              *v12.StatefulSet
 	KeycloakAdminSecret             *v1.Secret
-	KeycloakIngress                 *v1beta1.Ingress
+	KeycloakIngress                 *v14.Ingress
 	KeycloakRoute                   *v13.Route
 	KeycloakMetricsRoute            *v13.Route
 	PostgresqlServiceEndpoints      *v1.Endpoints
@@ -97,6 +99,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
+	err = i.readDatabaseSSLSecretCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
 	err = i.readProbesCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
@@ -128,6 +135,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakDiscoveryServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakMonitoringServiceCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -345,6 +357,29 @@ func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.
 	return nil
 }
 
+func (i *ClusterState) readDatabaseSSLSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	databaseSSLSecret := &v1.Secret{}
+	databaseSSLSecretSelector := client.ObjectKey{
+		Name:      model.DatabaseSecretSslCert,
+		Namespace: cr.Namespace,
+	}
+
+	err := controllerClient.Get(context, databaseSSLSecretSelector, databaseSSLSecret)
+
+	if err != nil {
+		// If the resource type doesn't exist on the cluster or does exist but is not found
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
+			i.DatabaseSSLCert = nil
+		} else {
+			return err
+		}
+	} else {
+		i.DatabaseSSLCert = databaseSSLSecret.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.DatabaseSSLCert.Kind, i.DatabaseSSLCert.Name)
+	}
+	return nil
+}
+
 func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	databaseSecret := model.DatabaseSecret(cr)
 	databaseSecretSelector := model.DatabaseSecretSelector(cr)
@@ -388,10 +423,10 @@ func (i *ClusterState) readProbesCurrentState(context context.Context, cr *kc.Ke
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	isRHSSO := model.Profiles.IsRHSSO(cr)
 
-	deployment := model.KeycloakDeployment(cr, nil)
+	deployment := model.KeycloakDeployment(cr, nil, nil)
 	selector := model.KeycloakDeploymentSelector(cr)
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr, nil)
+		deployment = model.RHSSODeployment(cr, nil, nil)
 		selector = model.RHSSODeploymentSelector(cr)
 	}
 
@@ -419,6 +454,22 @@ func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.
 	} else {
 		i.KeycloakDiscoveryService = keycloakDiscoveryService.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.KeycloakDiscoveryService.Kind, i.KeycloakDiscoveryService.Name)
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakMonitoringServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakMonitoringService := model.KeycloakMonitoringService(cr)
+	keycloakMonitoringServiceSelector := model.KeycloakMonitoringServiceSelector(cr)
+
+	err := controllerClient.Get(context, keycloakMonitoringServiceSelector, keycloakMonitoringService)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakMonitoringService = keycloakMonitoringService.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakMonitoringService.Kind, i.KeycloakMonitoringService.Name)
 	}
 	return nil
 }

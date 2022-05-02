@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -321,4 +322,30 @@ func TestClient_login(t *testing.T) {
 	// token must be set on the client now
 	assert.NoError(t, err)
 	assert.Equal(t, client.token, "dummy")
+}
+
+func TestClient_useKeycloakServerCertificate(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		_, err := w.Write([]byte("dummy"))
+		if err != nil {
+			t.Errorf("dummy write failed with error %v", err)
+		}
+	})
+	ts := httptest.NewTLSServer(handler)
+	defer ts.Close()
+
+	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: ts.Certificate().Raw})
+
+	requester, err := defaultRequester(pemCert)
+	assert.NoError(t, err)
+	httpClient, ok := requester.(*http.Client)
+	assert.True(t, ok)
+	assert.False(t, httpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
+
+	request, err := http.NewRequest("GET", ts.URL, nil)
+	assert.NoError(t, err)
+	resp, err := requester.Do(request)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, 200)
 }

@@ -8,6 +8,10 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 )
 
+const (
+	umaRoleName = "uma_protection"
+)
+
 type Reconciler interface {
 	Reconcile(cr *kc.KeycloakClient) error
 }
@@ -43,9 +47,19 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 		desired.AddAction(i.getUpdatedClientSecretState(state, cr))
 	}
 
+	if state.DeprecatedClientSecret != nil {
+		// Delete client secret created using the previous naming scheme, i.e., keycloak-client-secret-<CLIENT_ID>.
+		// See GH issue #473 and KEYCLOAK-18346.
+		desired.AddAction(i.getDeletedDeprecatedClientSecretState(state, cr))
+	}
+
 	i.ReconcileRoles(state, cr, &desired)
 
 	i.ReconcileScopeMappings(state, cr, &desired)
+
+	i.ReconcileClientScopes(state, cr, &desired)
+
+	i.ReconcileDefaultClientRoles(state, cr, &desired)
 
 	return desired
 }
@@ -54,6 +68,13 @@ func (i *KeycloakClientReconciler) ReconcileRoles(state *common.ClientState, cr 
 	// delete existing roles for which no desired role is found that (matches by ID OR has no ID but matches by name)
 	// this implies that specifying a role with matching name but different ID will result in deletion (and re-creation)
 	rolesDeleted, _ := model.RoleDifferenceIntersection(state.Roles, cr.Spec.Roles)
+	// Prevent uma_protection role from deletion when fine-grained authorization support is enabled but
+	// not present in the CR. This role is automatically created by Keycloak for AuthZ - read more below:
+	// https://www.keycloak.org/docs/latest/authorization_services/#_service_protection_whatis_obtain_pat
+	// TODO: evaluate sync options (once available) for uma_protection role once implemented
+	if cr.Spec.Client.AuthorizationServicesEnabled || cr.Spec.Client.AuthorizationSettings != nil {
+		rolesDeleted = removeUMARole(rolesDeleted)
+	}
 	for _, role := range rolesDeleted {
 		desired.AddAction(i.getDeletedClientRoleState(state, cr, role.DeepCopy()))
 	}
@@ -100,9 +121,6 @@ func (i *KeycloakClientReconciler) ReconcileScopeMappings(state *common.ClientSt
 	if cr.Spec.ScopeMappings == nil {
 		cr.Spec.ScopeMappings = &kc.MappingsRepresentation{}
 	}
-	for clientID, clientMappings := range cr.Spec.ScopeMappings.ClientMappings {
-		clientMappings.Client = clientID
-	}
 
 	mappingsNew := scopeMappingDifference(cr.Spec.ScopeMappings, state.ScopeMappings)
 	if mappingsNew.RealmMappings != nil {
@@ -119,6 +137,38 @@ func (i *KeycloakClientReconciler) ReconcileScopeMappings(state *common.ClientSt
 	for _, clientMappings := range mappingsDeleted.ClientMappings {
 		desired.AddAction(i.getDeletedClientClientScopeMappingsState(state, cr, clientMappings.DeepCopy()))
 	}
+}
+
+func (i *KeycloakClientReconciler) ReconcileClientScopes(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	defaultClientScopes := model.FilterClientScopesByNames(state.AvailableClientScopes, cr.Spec.Client.DefaultClientScopes)
+
+	defaultClientScopesNew, _ := model.ClientScopeDifferenceIntersection(defaultClientScopes, state.DefaultClientScopes)
+	for _, clientScope := range defaultClientScopesNew {
+		desired.AddAction(i.getCreatedClientDefaultClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	defaultClientScopesDeleted, _ := model.ClientScopeDifferenceIntersection(state.DefaultClientScopes, defaultClientScopes)
+	for _, clientScope := range defaultClientScopesDeleted {
+		desired.AddAction(i.getDeletedClientDefaultClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	optionalClientScopes := model.FilterClientScopesByNames(state.AvailableClientScopes, cr.Spec.Client.OptionalClientScopes)
+
+	optionalClientScopesNew, _ := model.ClientScopeDifferenceIntersection(optionalClientScopes, state.OptionalClientScopes)
+	for _, clientScope := range optionalClientScopesNew {
+		desired.AddAction(i.getCreatedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	optionalClientScopesDeleted, _ := model.ClientScopeDifferenceIntersection(state.OptionalClientScopes, optionalClientScopes)
+	for _, clientScope := range optionalClientScopesDeleted {
+		desired.AddAction(i.getDeletedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+}
+
+// removeUMARole removes the uma_protection role from r if it is present
+func removeUMARole(r []kc.RoleRepresentation) []kc.RoleRepresentation {
+	filteredRoles, _ := model.RoleDifferenceIntersection(r, []kc.RoleRepresentation{{Name: umaRoleName}})
+	return filteredRoles
 }
 
 // determine which scope mappings are present in a but not in b
@@ -167,6 +217,62 @@ func scopeMappingDifference(a *kc.MappingsRepresentation, b *kc.MappingsRepresen
 	return d
 }
 
+// ReconcileDefaultClientRoles see KEYCLOAK-19086
+func (i *KeycloakClientReconciler) ReconcileDefaultClientRoles(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	var defaultRolesAdded []kc.RoleRepresentation
+	var defaultRolesDeleted []kc.RoleRepresentation
+
+	for _, defaultRole := range cr.Spec.Client.DefaultRoles {
+		// let's check if it needs to be added as default
+		found := false
+		for _, existingDefaultRole := range state.DefaultRoles {
+			if defaultRole == existingDefaultRole.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// try to get roleID for the defaultRole; notice that state contains already existing role, not the ones created
+			// in this reconciler loop
+			var roleID string
+			for _, existingRole := range state.Roles {
+				if defaultRole == existingRole.Name {
+					roleID = existingRole.ID
+					break
+				}
+			}
+
+			// roleID might be empty, but it is intentional: REST API will probably return error (doesn't search by role
+			// name in current version), but it will at least re-trigger the reconciler which will correctly set the role as default
+			// yes, it is a nasty workaround
+			defaultRolesAdded = append(defaultRolesAdded, kc.RoleRepresentation{ID: roleID, Name: defaultRole})
+		}
+	}
+
+	// check which roles need to be removed from defaults
+	// notice that we don't delete that role, we just remove it from the default roles
+	for _, existingDefaultRole := range state.DefaultRoles {
+		found := false
+		for _, desiredDefaultRole := range cr.Spec.Client.DefaultRoles {
+			if existingDefaultRole.Name == desiredDefaultRole {
+				found = true
+				break
+			}
+		}
+		if !found {
+			defaultRolesDeleted = append(defaultRolesDeleted, kc.RoleRepresentation{ID: existingDefaultRole.ID})
+		}
+	}
+
+	if len(defaultRolesAdded) > 0 {
+		desired.AddAction(i.getAddedDefaultClientRolesState(state, cr, &defaultRolesAdded))
+	}
+
+	if len(defaultRolesDeleted) > 0 {
+		desired.AddAction(i.getDeletedDefaultClientRolesState(state, cr, &defaultRolesDeleted))
+	}
+}
+
 func (i *KeycloakClientReconciler) pingKeycloak() common.ClusterAction {
 	return common.PingAction{
 		Msg: "check if keycloak is available",
@@ -189,10 +295,17 @@ func (i *KeycloakClientReconciler) getCreatedClientState(state *common.ClientSta
 	}
 }
 
+func (i *KeycloakClientReconciler) getDeletedDeprecatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
+	return common.GenericDeleteAction{
+		Ref: state.DeprecatedClientSecret,
+		Msg: fmt.Sprintf("delete deprecated client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+	}
+}
+
 func (i *KeycloakClientReconciler) getUpdatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericUpdateAction{
 		Ref: model.ClientSecretReconciled(cr, state.ClientSecret),
-		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Name),
 	}
 }
 
@@ -207,7 +320,7 @@ func (i *KeycloakClientReconciler) getUpdatedClientState(state *common.ClientSta
 func (i *KeycloakClientReconciler) getCreatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericCreateAction{
 		Ref: model.ClientSecret(cr),
-		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Name),
 	}
 }
 
@@ -236,6 +349,26 @@ func (i *KeycloakClientReconciler) getDeletedClientRoleState(state *common.Clien
 		Ref:   cr,
 		Realm: state.Realm.Spec.Realm.Realm,
 		Msg:   fmt.Sprintf("delete client role %v/%v/%v", cr.Namespace, cr.Spec.Client.ClientID, role.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getAddedDefaultClientRolesState(state *common.ClientState, cr *kc.KeycloakClient, roles *[]kc.RoleRepresentation) common.ClusterAction {
+	return common.AddDefaultRolesAction{
+		Roles:              roles,
+		DefaultRealmRoleID: state.DefaultRoleID,
+		Ref:                cr,
+		Realm:              state.Realm.Spec.Realm.Realm,
+		Msg:                fmt.Sprintf("add default client roles %v/%v: %v", cr.Namespace, cr.Spec.Client.ClientID, roles),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedDefaultClientRolesState(state *common.ClientState, cr *kc.KeycloakClient, roles *[]kc.RoleRepresentation) common.ClusterAction {
+	return common.DeleteDefaultRolesAction{
+		Roles:              roles,
+		DefaultRealmRoleID: state.DefaultRoleID,
+		Ref:                cr,
+		Realm:              state.Realm.Spec.Realm.Realm,
+		Msg:                fmt.Sprintf("delete default client roles %v/%v: %v", cr.Namespace, cr.Spec.Client.ClientID, roles),
 	}
 }
 
@@ -272,5 +405,41 @@ func (i *KeycloakClientReconciler) getDeletedClientClientScopeMappingsState(stat
 		Ref:      cr,
 		Realm:    state.Realm.Spec.Realm.Realm,
 		Msg:      fmt.Sprintf("delete client client scope mappings %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, mappings.Client),
+	}
+}
+
+func (i *KeycloakClientReconciler) getCreatedClientDefaultClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.UpdateClientDefaultClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("create client default client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getCreatedClientOptionalClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.UpdateClientOptionalClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("create client optional client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedClientDefaultClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.DeleteClientDefaultClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("delete client default client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedClientOptionalClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.DeleteClientOptionalClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("delete client optional client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
 	}
 }

@@ -9,6 +9,9 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -16,7 +19,10 @@ const (
 	clientName         = "test-client"
 	secondClientName   = "test-client-second"
 	externalClientName = "test-client-external"
+	authZClientName    = "test-client-authz"
 )
+
+var ErrDeprecatedClientSecretFound = errors.New("deprecated client secret found")
 
 func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
@@ -38,14 +44,26 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 				},
 				testFunction: externalKeycloakClientBasicTest,
 			},
+			"keycloakClientAuthZSettingsTest": {
+				prepareTestEnvironmentSteps: []environmentInitializationStep{
+					prepareKeycloakClientAuthZCR,
+				},
+				testFunction: keycloakClientAuthZTest,
+			},
 			"keycloakClientRolesTest": {
 				testFunction: keycloakClientRolesTest,
+			},
+			"keycloakClientDefaultRolesTest": {
+				testFunction: keycloakClientDefaultRolesTest,
 			},
 			"keycloakClientScopeMappingsTest": {
 				prepareTestEnvironmentSteps: []environmentInitializationStep{
 					prepareKeycloakClientWithRolesCR,
 				},
 				testFunction: keycloakClientScopeMappingsTest,
+			},
+			"keycloakClientDeprecatedClientSecretTest": {
+				testFunction: keycloakClientDeprecatedClientSecretTest,
 			},
 		},
 	}
@@ -113,6 +131,126 @@ func getKeycloakClientCR(namespace string, external bool) *keycloakv1alpha1.Keyc
 	}
 }
 
+func getKeycloakClientAuthZCR(namespace string) *keycloakv1alpha1.KeycloakClient {
+	k8sName := testAuthZKeycloakClientCRName
+	id := authZClientName
+	labels := CreateLabel(namespace)
+
+	audioResourceType := "urn:" + id + ":resources:audio"
+	imageResourceType := "urn:" + id + ":resources:image"
+
+	return &keycloakv1alpha1.KeycloakClient{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      k8sName,
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: keycloakv1alpha1.KeycloakClientSpec{
+			RealmSelector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Client: &keycloakv1alpha1.KeycloakAPIClient{
+				ID:                           id,
+				ClientID:                     id,
+				Name:                         id,
+				Description:                  "AuthZ Client used within operator tests",
+				PublicClient:                 false,
+				ServiceAccountsEnabled:       true,
+				AuthorizationServicesEnabled: true,
+				AuthorizationSettings: &keycloakv1alpha1.KeycloakResourceServer{
+					Resources: []keycloakv1alpha1.KeycloakResource{
+						{
+							Name: "Audio Resource",
+							Uris: []string{"/audio"},
+							Type: audioResourceType,
+							Scopes: []apiextensionsv1.JSON{
+								{Raw: []byte(`{"name": "audio:listen"}`)},
+							},
+						},
+						{
+							Name: "Image Resource",
+							Uris: []string{"/image"},
+							Type: imageResourceType,
+							Scopes: []apiextensionsv1.JSON{
+								{Raw: []byte(`{"name": "image:create"}`)},
+								{Raw: []byte(`{"name": "image:read"}`)},
+								{Raw: []byte(`{"name": "image:delete"}`)},
+							},
+						},
+					},
+					Policies: []keycloakv1alpha1.KeycloakPolicy{
+						{
+							Name:        "Role Policy",
+							Description: "A policy that is role based",
+							Type:        "role",
+							Logic:       "POSITIVE",
+							Config: map[string]string{
+								"roles": "[{\"id\":\"" + id + "/uma_protection\",\"required\":true}]",
+							},
+						},
+						{
+							Name:             "Aggregate Policy",
+							Description:      "A policy that is an aggregate",
+							Type:             "aggregate",
+							Logic:            "POSITIVE",
+							DecisionStrategy: "AFFIRMATIVE",
+							Config: map[string]string{
+								"applyPolicies": "[\"Role Policy\",\"Deny Policy\"]",
+							},
+						},
+						{
+							Name:             "Audio Permission",
+							Description:      "An audio permission description",
+							Type:             "resource",
+							DecisionStrategy: "AFFIRMATIVE",
+							Config: map[string]string{
+								"defaultResourceType": audioResourceType,
+								"default":             "true",
+								"applyPolicies":       "[\"Time Policy\"]",
+								"scopes":              "[\"audio:listen\"]",
+							},
+						},
+						{
+							Name:             "Image Permission",
+							Description:      "An image permission description",
+							Type:             "scope",
+							DecisionStrategy: "UNANIMOUS",
+							Config: map[string]string{
+								"applyPolicies": "[\"Deny Policy\"]",
+								"scopes":        "[\"image:delete\"]",
+							},
+						},
+						{
+							Name:        "Deny Policy",
+							Description: "A policy that is JS based",
+							Type:        "js",
+							Config: map[string]string{
+								"code": "$evaluation.deny();",
+							},
+						},
+						{
+							Name:        "Time Policy",
+							Description: "A policy that grants access between 3 and 5 PM",
+							Type:        "time",
+							Logic:       "POSITIVE",
+							Config: map[string]string{
+								"hour":    "15",
+								"hourEnd": "17",
+							},
+						},
+					},
+					Scopes: []keycloakv1alpha1.KeycloakScope{
+						{Name: "audio:listen"},
+						{Name: "image:create"},
+						{Name: "image:read"},
+						{Name: "image:delete"},
+					},
+				},
+			},
+		},
+	}
+}
+
 func prepareKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakClientCR := getKeycloakClientCR(namespace, false)
 	return Create(framework, keycloakClientCR, ctx)
@@ -123,12 +261,57 @@ func prepareExternalKeycloakClientCR(t *testing.T, framework *test.Framework, ct
 	return Create(framework, keycloakClientCR, ctx)
 }
 
+func prepareKeycloakClientAuthZCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakClientCR := getKeycloakClientAuthZCR(namespace)
+	return Create(framework, keycloakClientCR, ctx)
+}
+
 func keycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	return WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
 }
 
 func externalKeycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	return WaitForClientToBeReady(t, framework, namespace, testExternalKeycloakClientCRName)
+}
+
+func keycloakClientAuthZTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	return WaitForClientToBeReady(t, framework, namespace, testAuthZKeycloakClientCRName)
+}
+
+func keycloakClientDeprecatedClientSecretTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	client := getKeycloakClientCR(namespace, false)
+	secret := model.DeprecatedClientSecret(client)
+
+	// create client secret using client ID, i.e., keycloak-client-secret-<CLIENT_ID>
+	err := Create(framework, secret, ctx)
+	if err != nil {
+		return err
+	}
+
+	// create client
+	err = Create(framework, client, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	// verify client secret removal in secondary resources
+	_, exists := client.Status.SecondaryResources[secret.Name]
+	if exists {
+		return errors.Wrap(ErrDeprecatedClientSecretFound, secret.Name)
+	}
+
+	// verify client secret removal
+	var retrievedSecret v1.Secret
+	err = GetNamespacedObject(framework, namespace, secret.Name, &retrievedSecret)
+	if !apierrors.IsNotFound(err) {
+		return err
+	}
+
+	return nil
 }
 
 func keycloakClientRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
@@ -169,6 +352,51 @@ func keycloakClientRolesTest(t *testing.T, framework *test.Framework, ctx *test.
 		return err
 	}
 	return WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+}
+
+func keycloakClientDefaultRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// create
+	client := getKeycloakClientCR(namespace, false)
+	client.Spec.Roles = []keycloakv1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}, {Name: "c"}}
+	client.Spec.Client.DefaultRoles = []string{"a", "b"}
+	err := Create(framework, client, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// are roles "a" and "b" the ONLY default roles for this client?
+	err = waitForDefaultClientRoles(t, framework, keycloakCR, client, "a", "b")
+	if err != nil {
+		return err
+	}
+
+	// update default client roles
+	err = GetNamespacedObject(framework, namespace, testKeycloakClientCRName, client)
+	if err != nil {
+		return err
+	}
+	client.Spec.Client.DefaultRoles = []string{"b", "c"}
+	err = Update(framework, client)
+	if err != nil {
+		return err
+	}
+
+	// are roles "b" and "c" the ONLY default roles for this client?
+	err = waitForDefaultClientRoles(t, framework, keycloakCR, client, "b", "c")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getClientRoleID(authenticatedClient common.KeycloakInterface, clientName, roleName string) (string, error) {
@@ -220,6 +448,48 @@ func waitForClientRoles(t *testing.T, framework *test.Framework, keycloakCR keyc
 				"actual  : %v",
 				expected, roles)
 		}
+		return nil
+	})
+}
+
+func waitForDefaultClientRoles(t *testing.T, framework *test.Framework, keycloakCR keycloakv1alpha1.Keycloak, clientCR *keycloakv1alpha1.KeycloakClient, expectedRoleNames ...string) error {
+	return WaitForConditionWithClient(t, framework, keycloakCR, func(authenticatedClient common.KeycloakInterface) error {
+		fail := false
+
+		realm, err := authenticatedClient.GetRealm(realmName)
+		if err != nil {
+			return err
+		}
+
+		defaultRoles, err := authenticatedClient.ListRealmRoleClientRoleComposites(realmName, realm.Spec.Realm.DefaultRole.ID, clientCR.Spec.Client.ID)
+		if err != nil {
+			return err
+		}
+
+		// check if roles and defaultRoles equal
+		if len(expectedRoleNames) != len(defaultRoles) {
+			fail = true
+		}
+		for _, expected := range expectedRoleNames {
+			found := false
+			for _, actual := range defaultRoles {
+				if expected == actual.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				fail = true
+			}
+		}
+
+		if fail {
+			return errors.Errorf("default roles not as expected:\n"+
+				"expected: %v\n"+
+				"actual  : %v",
+				expectedRoleNames, defaultRoles)
+		}
+
 		return nil
 	})
 }

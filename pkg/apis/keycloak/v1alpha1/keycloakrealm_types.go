@@ -25,7 +25,7 @@ type KeycloakRealmSpec struct {
 type KeycloakAPIRealm struct {
 	// +kubebuilder:validation:Required
 	// +optional
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Realm name.
 	// +kubebuilder:validation:Required
 	Realm string `json:"realm"`
@@ -35,6 +35,12 @@ type KeycloakAPIRealm struct {
 	// Realm display name.
 	// +optional
 	DisplayName string `json:"displayName"`
+	// Realm HTML display name.
+	// +optional
+	DisplayNameHTML string `json:"displayNameHtml,omitempty"`
+	// Realm Password Policy
+	// +optional
+	PasswordPolicy string `json:"passwordPolicy,omitempty"`
 	// A set of Keycloak Users.
 	// +optional
 	Users []*KeycloakAPIUser `json:"users,omitempty"`
@@ -51,6 +57,9 @@ type KeycloakAPIRealm struct {
 	// TODO: change to values and use kubebuilder default annotation once supported
 	// +optional
 	EventsEnabled *bool `json:"eventsEnabled,omitempty"`
+	// Enabled event types
+	// +optional
+	EnabledEventTypes []string `json:"enabledEventTypes,omitempty"`
 	// Enable events recording
 	// TODO: change to values and use kubebuilder default annotation once supported
 	// +optional
@@ -169,12 +178,27 @@ type KeycloakAPIRealm struct {
 	// +optional
 	Roles *RolesRepresentation `json:"roles,omitempty"`
 
+	// Default role
+	// +optional
+	DefaultRole *RoleRepresentation `json:"defaultRole,omitempty"`
+
 	// Scope Mappings
 	// +optional
 	ScopeMappings []ScopeMappingRepresentation `json:"scopeMappings,omitempty"`
 	// Client Scope Mappings
 	// +optional
 	ClientScopeMappings map[string]ScopeMappingRepresentationArray `json:"clientScopeMappings,omitempty"`
+
+	// Access Token Lifespan For Implicit Flow
+	// +optional
+	AccessTokenLifespanForImplicitFlow *int32 `json:"accessTokenLifespanForImplicitFlow,omitempty"`
+	// Access Token Lifespan
+	// +optional
+	AccessTokenLifespan *int32 `json:"accessTokenLifespan,omitempty"`
+
+	// User Managed Access Allowed
+	// +optional
+	UserManagedAccessAllowed *bool `json:"userManagedAccessAllowed,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
@@ -556,6 +580,7 @@ type KeycloakRealmStatus struct {
 }
 
 // KeycloakRealm is the Schema for the keycloakrealms API
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -36,7 +36,7 @@ func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState,
 	desired.AddAction(i.getDesiredRealmState(state, cr))
 
 	for _, user := range cr.Spec.Realm.Users {
-		desired.AddAction(i.getDesiredUserSate(state, cr, user))
+		desired.AddAction(i.getDesiredUserState(state, cr, user))
 	}
 
 	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr))
@@ -96,7 +96,7 @@ func (i *KeycloakRealmReconciler) getDesiredRealmState(state *common.RealmState,
 	}
 }
 
-func (i *KeycloakRealmReconciler) getDesiredUserSate(state *common.RealmState, cr *kc.KeycloakRealm, user *kc.KeycloakAPIUser) common.ClusterAction {
+func (i *KeycloakRealmReconciler) getDesiredUserState(state *common.RealmState, cr *kc.KeycloakRealm, user *kc.KeycloakAPIUser) common.ClusterAction {
 	val, ok := state.RealmUserSecrets[user.UserName]
 	if !ok || val == nil {
 		return &common.GenericCreateAction{
