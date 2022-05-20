@@ -103,7 +103,7 @@ spec:
                   attributes:
                     additionalProperties:
                       type: string
-                    description: Arbitrary realm attribute list. Used for Vibrent configuration.
+                    description: Attributes
                     type: object
                   authenticationFlows:
                     description: Authentication flows
