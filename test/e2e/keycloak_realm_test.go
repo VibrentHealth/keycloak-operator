@@ -45,6 +45,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"unmanagedKeycloakRealmTest": {
 				testFunction: keycloakUnmanagedRealmTest,
 			},
+			"allowRealmDeletionKeycloakRealmTest": {
+        testFunction: keycloakAllowRealmDeletionRealmTest,
+      },
 		},
 	}
 }
@@ -487,6 +490,23 @@ func keycloakRealmWithUserFederationTest(t *testing.T, framework *test.Framework
 func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
 	keycloakRealmCR.Spec.Unmanaged = true
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func keycloakAllowRealmDeletionRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+	keycloakRealmCR.Spec.AllowRealmDeletion = true
 
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {
