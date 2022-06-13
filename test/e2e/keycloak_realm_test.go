@@ -46,8 +46,8 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 				testFunction: keycloakUnmanagedRealmTest,
 			},
 			"allowRealmDeletionKeycloakRealmTest": {
-        testFunction: keycloakAllowRealmDeletionRealmTest,
-      },
+				testFunction: keycloakAllowRealmDeletionRealmTest,
+			},
 		},
 	}
 }

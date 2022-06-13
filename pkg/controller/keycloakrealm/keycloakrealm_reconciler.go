@@ -27,8 +27,8 @@ func (i *KeycloakRealmReconciler) Reconcile(state *common.RealmState, cr *kc.Key
 		return i.ReconcileRealmCreate(state, cr)
 	}
 	if cr.Spec.AllowRealmDeletion {
-	  log.Info("Deleting the realm. AllowRealmDeletion flag is set to true.")
-	  return i.ReconcileRealmDelete(state, cr)
+		log.Info("Deleting the realm. AllowRealmDeletion flag is set to true.")
+		return i.ReconcileRealmDelete(state, cr)
 	}
 	log.Info("Realm is being orphaned, will not be deleted.")
 	return nil
