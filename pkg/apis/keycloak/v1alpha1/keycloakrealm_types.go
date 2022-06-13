@@ -20,6 +20,9 @@ type KeycloakRealmSpec struct {
 	// A list of overrides to the default Realm behavior.
 	// +listType=atomic
 	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
+	// Allow realm deletion.
+  // +optional
+  AllowRealmDeletion bool `json:"allowRealmDeletion,omitempty"`
 }
 
 type KeycloakAPIRealm struct {

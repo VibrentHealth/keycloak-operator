@@ -1364,6 +1364,9 @@ spec:
                   unmanaged and not be managed by this operator. It can then be used
                   for targeting purposes.
                 type: boolean
+              allowRealmDeletion:
+                description: Allow Realm Deletion flag.
+                type: boolean
             required:
             - realm
             type: object
