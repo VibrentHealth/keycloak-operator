@@ -31,6 +31,9 @@ spec:
           spec:
             description: KeycloakRealmSpec defines the desired state of KeycloakRealm.
             properties:
+              allowRealmDeletion:
+                description: Allow realm deletion.
+                type: boolean
               instanceSelector:
                 description: Selector for looking up Keycloak Custom Resources.
                 properties:
@@ -1363,9 +1366,6 @@ spec:
                 description: When set to true, this KeycloakRealm will be marked as
                   unmanaged and not be managed by this operator. It can then be used
                   for targeting purposes.
-                type: boolean
-              allowRealmDeletion:
-                description: Allow Realm Deletion flag.
                 type: boolean
             required:
             - realm
