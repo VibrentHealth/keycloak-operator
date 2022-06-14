@@ -63,6 +63,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 			InstanceSelector: &metav1.LabelSelector{
 				MatchLabels: CreateLabel(namespace),
 			},
+			AllowRealmDeletion:                   true,
 			Realm: &keycloakv1alpha1.KeycloakAPIRealm{
 				ID:                                 realmName,
 				Realm:                              realmName,
@@ -506,7 +507,6 @@ func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *te
 
 func keycloakAllowRealmDeletionRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
-	keycloakRealmCR.Spec.AllowRealmDeletion = true
 
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {
