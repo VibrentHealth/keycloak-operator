@@ -63,7 +63,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 			InstanceSelector: &metav1.LabelSelector{
 				MatchLabels: CreateLabel(namespace),
 			},
-			AllowRealmDeletion:                   true,
+			AllowRealmDeletion: true,
 			Realm: &keycloakv1alpha1.KeycloakAPIRealm{
 				ID:                                 realmName,
 				Realm:                              realmName,
