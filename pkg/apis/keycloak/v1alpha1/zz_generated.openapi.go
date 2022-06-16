@@ -557,6 +557,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 							},
 						},
 					},
+					"allowRealmDeletion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Allow realm deletion.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"realm"},
 			},

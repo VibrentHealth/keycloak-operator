@@ -159,6 +159,7 @@ func TestKeycloakRealmReconciler_ReconcileRealmDelete(t *testing.T) {
 	realm := getDummyRealm()
 	state := getDummyState()
 	realm.DeletionTimestamp = &v1.Time{}
+	realm.Spec.AllowRealmDeletion = true
 
 	// when
 	desiredState := reconciler.Reconcile(state, realm)

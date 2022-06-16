@@ -26,7 +26,12 @@ func (i *KeycloakRealmReconciler) Reconcile(state *common.RealmState, cr *kc.Key
 	if cr.DeletionTimestamp == nil {
 		return i.ReconcileRealmCreate(state, cr)
 	}
-	return i.ReconcileRealmDelete(state, cr)
+	if cr.Spec.AllowRealmDeletion {
+		log.Info("Deleting the realm. AllowRealmDeletion flag is set to true.")
+		return i.ReconcileRealmDelete(state, cr)
+	}
+	log.Info("Realm is being orphaned, will not be deleted.")
+	return nil
 }
 
 func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
