@@ -31,6 +31,9 @@ spec:
           spec:
             description: KeycloakClientSpec defines the desired state of KeycloakClient.
             properties:
+              apiDomain:
+                description: Api Domain.
+                type: string
               client:
                 description: Keycloak Client REST object.
                 properties:
