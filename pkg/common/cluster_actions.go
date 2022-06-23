@@ -164,11 +164,9 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
     log.Error(err, "")
     os.Exit(1)
   }
-  jsonString := string(responseData)
-  fmt.Println(jsonString)
-  jsonArray := []byte(responseData)
+  jsonResponseArray := []byte(responseData)
   var domains []Domain
-  err2 := json.Unmarshal(jsonArray, &domains)
+  err2 := json.Unmarshal(jsonResponseArray, &domains)
   if err2 != nil {
     fmt.Println("error:", err2)
   }
