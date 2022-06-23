@@ -163,6 +163,7 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
 	if err != nil {
 		fmt.Print(err.Error())
 	}
+	response.Body.Close()
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error(err, "")
