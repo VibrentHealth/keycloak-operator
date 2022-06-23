@@ -8,6 +8,11 @@ import (
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
+
+  "encoding/json"
+	"net/http"
+	"io/ioutil"
+	"os"
 )
 
 const (
@@ -20,6 +25,12 @@ type Reconciler interface {
 
 type KeycloakClientReconciler struct { // nolint
 	Keycloak kc.Keycloak
+}
+
+type Domain struct {
+	Code string
+	Id   string
+	Url  string
 }
 
 func NewKeycloakClientReconciler(keycloak kc.Keycloak) *KeycloakClientReconciler {
@@ -36,6 +47,31 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 		desired.AddAction(i.getDeletedClientState(state, cr))
 		return desired
 	}
+
+  // RedirectUris Logic for the subscriber-web client
+  if(cr.Spec.Client.ClientID == "subscriber-web" && len(cr.Spec.ApiDomain) != 0) {
+    response, err := http.Get(cr.Spec.ApiDomain)
+    if err != nil {
+      fmt.Print(err.Error())
+    }
+    responseData, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+      log.Error(err, "")
+      os.Exit(1)
+    }
+    jsonResponseArray := []byte(responseData)
+    var domains []Domain
+    err2 := json.Unmarshal(jsonResponseArray, &domains)
+    if err2 != nil {
+      fmt.Println("error:", err2)
+    }
+    retrievedDomains := []string{}
+    for k := range domains {
+    retrievedDomains = append(retrievedDomains, domains[k].Url)
+    }
+    cr.Spec.Client.RedirectUris = retrievedDomains
+  }
+  // End of RedirectUris Logic
 
 	if state.Client == nil {
 		desired.AddAction(i.getCreatedClientState(state, cr))
