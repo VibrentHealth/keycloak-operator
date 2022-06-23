@@ -30,7 +30,7 @@ type KeycloakClientSpec struct {
 	ServiceAccountClientRoles map[string][]string `json:"serviceAccountClientRoles,omitempty"`
 	// Api Domain.
   // +optional
-  ApiDomain string `json:"apiDomain,omitempty"`
+  APIDomain string `json:"apiDomain,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_mappingsrepresentation
