@@ -13,10 +13,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-  "encoding/json"
-  "net/http"
-  "io/ioutil"
-  "os"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"os"
 )
 
 var log = logf.Log.WithName("action_runner")
@@ -71,6 +71,8 @@ type ClusterActionRunner struct {
 	scheme         *runtime.Scheme
 	cr             runtime.Object
 }
+
+const subscriberWebClient = "subscriber-web"
 
 // Create an action runner to run kubernetes actions
 func NewClusterActionRunner(context context.Context, client client.Client, scheme *runtime.Scheme, cr runtime.Object) ActionRunner {
@@ -149,33 +151,34 @@ func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
 	}
 	return i.keycloakClient.UpdateRealm(obj)
 }
+
 type Domain struct {
 	Code string
 	ID   string
 	URL  string
 }
-func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
-  response, err := http.Get(obj.Spec.APIDomain)
-  if err != nil {
-    fmt.Print(err.Error())
-  }
-  responseData, err := ioutil.ReadAll(response.Body)
-  if err != nil {
-    log.Error(err, "")
-    os.Exit(1)
-  }
-  var domains []Domain
-  err2 := json.Unmarshal(responseData, &domains)
-  if err2 != nil {
-    fmt.Println("error:", err2)
-  }
-  retrievedDomains := []string{}
-  for k := range domains {
-  retrievedDomains = append(retrievedDomains, domains[k].URL)
-  }
-  return retrievedDomains
-}
 
+func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
+	response, err := http.Get(obj.Spec.APIDomain)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+	var domains []Domain
+	err2 := json.Unmarshal(responseData, &domains)
+	if err2 != nil {
+		fmt.Println("error:", err2)
+	}
+	retrievedDomains := []string{}
+	for k := range domains {
+		retrievedDomains = append(retrievedDomains, domains[k].URL)
+	}
+	return retrievedDomains
+}
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
@@ -189,9 +192,9 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	}
 
 	obj.Spec.Client.ID = uid
-  if(obj.Spec.Client.ClientID == "subscriber-web" && len(obj.Spec.APIDomain) != 0) {
-    obj.Spec.Client.RedirectUris = retrieveDomains(obj)
-  }
+	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
+		obj.Spec.Client.RedirectUris = retrieveDomains(obj)
+	}
 
 	return i.client.Update(i.context, obj)
 }
@@ -200,8 +203,8 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
-	if(obj.Spec.Client.ClientID == "subscriber-web" && len(obj.Spec.APIDomain) != 0) {
-	  obj.Spec.Client.RedirectUris = retrieveDomains(obj)
+	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
+		obj.Spec.Client.RedirectUris = retrieveDomains(obj)
 	}
 	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 }
