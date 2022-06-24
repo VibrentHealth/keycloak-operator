@@ -163,12 +163,12 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	response.Body.Close()
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
+	response.Body.Close()
 	var domains []Domain
 	err2 := json.Unmarshal(responseData, &domains)
 	if err2 != nil {
