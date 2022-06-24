@@ -396,6 +396,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 							},
 						},
 					},
+					"apiDomain": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Api Domain.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"realmSelector", "client"},
 			},
