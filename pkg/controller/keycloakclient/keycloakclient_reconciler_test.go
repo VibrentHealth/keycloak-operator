@@ -23,7 +23,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-		  APIDomain: "https://test.com",
+			APIDomain: "https://test.com",
 			RealmSelector: &v13.LabelSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
@@ -48,10 +48,10 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	reconciler := NewKeycloakClientReconciler(keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
-  // test the apiDomain
-  if cr.Spec.Client.ClientID == "test" && len(cr.Spec.APIDomain) != 0 {
-    cr.Spec.Client.RedirectUris = []string{"testURL"}
-  }
+	// test the apiDomain
+	if cr.Spec.Client.ClientID == "test" && len(cr.Spec.APIDomain) != 0 {
+		cr.Spec.Client.RedirectUris = []string{"testURL"}
+	}
 
 	// then
 	assert.IsType(t, common.PingAction{}, desiredState[0])
