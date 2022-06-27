@@ -25,7 +25,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 		Spec: v1alpha1.KeycloakClientSpec{
 			RealmSelector: &v13.LabelSelector{
 				MatchLabels: map[string]string{"application": "sso"},
-				ApiDomain: "https://test.com"
+				APIDomain: "https://test.com",
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
 				ClientID: "test",
@@ -49,7 +49,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	desiredState := reconciler.Reconcile(currentState, cr)
 
   // test the apiDomain
-  if cr.Spec.Client.ClientID == "test" && len(cr.Spec.ApiDomain) != 0 {
+  if cr.Spec.Client.ClientID == "test" && len(cr.Spec.APIDomain) != 0 {
     cr.Spec.Client.RedirectUris = []byte(`testURL`)
   }
 
