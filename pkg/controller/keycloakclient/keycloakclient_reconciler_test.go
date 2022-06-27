@@ -50,7 +50,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 
   // test the apiDomain
   if cr.Spec.Client.ClientID == "test" && len(cr.Spec.APIDomain) != 0 {
-    cr.Spec.Client.RedirectUris = []string(`testURL`)
+    cr.Spec.Client.RedirectUris = "testURL"
   }
 
 	// then
@@ -60,7 +60,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientIDProperty])
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
-	assert.Equal(t, []string("testURL"), cr.Spec.Client.RedirectUris)
+	assert.Equal(t, "testURL", cr.Spec.Client.RedirectUris)
 }
 
 func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClientID(t *testing.T) {
