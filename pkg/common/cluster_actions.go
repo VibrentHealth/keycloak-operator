@@ -155,7 +155,7 @@ func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
 type Domain struct {
 	ProgramCode string
 	ProgramID   string
-	URL  string
+	URL         string
 }
 
 func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
