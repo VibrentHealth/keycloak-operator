@@ -153,8 +153,8 @@ func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
 }
 
 type Domain struct {
-	Code string
-	ID   string
+	ProgramCode string
+	ProgramID   string
 	URL  string
 }
 
