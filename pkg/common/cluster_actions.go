@@ -158,7 +158,7 @@ type Domain struct {
 	URL         string
 }
 
-func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
+func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 	response, err := http.Get(obj.Spec.APIDomain)
 	if err != nil {
 		fmt.Print(err.Error())
@@ -174,11 +174,38 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) []string {
 	if err2 != nil {
 		fmt.Println("error:", err2)
 	}
-	retrievedDomains := []string{}
+	retrievedRedirectURIs := []string{}
+	retrievedWebOrigins := []string{}
 	for k := range domains {
-		retrievedDomains = append(retrievedDomains, domains[k].URL)
+		retrievedRedirectURIs = append(retrievedRedirectURIs, domains[k].URL+"/*")
+		retrievedWebOrigins = append(retrievedWebOrigins, domains[k].URL)
 	}
-	return retrievedDomains
+
+	m := make(map[string][]string)
+	m["redirectUris"] = retrievedRedirectURIs
+	m["webOrigins"] = retrievedWebOrigins
+
+	return m
+}
+
+func updateRedirectUrisWebOrigins(obj *v1alpha1.KeycloakClient) {
+	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
+		m := retrieveDomains(obj)
+		completeListRedirectUris := obj.Spec.Client.RedirectUris
+		apiEndpointRedirectUris := m["redirectUris"]
+		for k := range apiEndpointRedirectUris {
+			completeListRedirectUris = append(completeListRedirectUris, apiEndpointRedirectUris[k])
+		}
+
+		completeListWebOrigins := obj.Spec.Client.WebOrigins
+		apiEndpointWebOrigins := m["webOrigins"]
+		for i := range apiEndpointWebOrigins {
+			completeListWebOrigins = append(completeListWebOrigins, apiEndpointWebOrigins[i])
+		}
+
+		obj.Spec.Client.RedirectUris = completeListRedirectUris
+		obj.Spec.Client.WebOrigins = completeListWebOrigins
+	}
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
@@ -193,9 +220,8 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	}
 
 	obj.Spec.Client.ID = uid
-	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
-		obj.Spec.Client.RedirectUris = retrieveDomains(obj)
-	}
+
+	updateRedirectUrisWebOrigins(obj)
 
 	return i.client.Update(i.context, obj)
 }
@@ -204,9 +230,9 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
-	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
-		obj.Spec.Client.RedirectUris = retrieveDomains(obj)
-	}
+
+	updateRedirectUrisWebOrigins(obj)
+
 	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 }
 
