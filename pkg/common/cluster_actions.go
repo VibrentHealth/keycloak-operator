@@ -12,6 +12,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"os"
 )
 
 var log = logf.Log.WithName("action_runner")
@@ -66,6 +71,8 @@ type ClusterActionRunner struct {
 	scheme         *runtime.Scheme
 	cr             runtime.Object
 }
+
+const subscriberWebClient = "subscriber-web"
 
 // Create an action runner to run kubernetes actions
 func NewClusterActionRunner(context context.Context, client client.Client, scheme *runtime.Scheme, cr runtime.Object) ActionRunner {
@@ -145,6 +152,62 @@ func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
 	return i.keycloakClient.UpdateRealm(obj)
 }
 
+type Domain struct {
+	ProgramCode string
+	ProgramID   string
+	URL         string
+}
+
+func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
+	response, err := http.Get(obj.Spec.APIDomain)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+	response.Body.Close()
+	var domains []Domain
+	err2 := json.Unmarshal(responseData, &domains)
+	if err2 != nil {
+		fmt.Println("error:", err2)
+	}
+	retrievedRedirectURIs := []string{}
+	retrievedWebOrigins := []string{}
+	for k := range domains {
+		retrievedRedirectURIs = append(retrievedRedirectURIs, domains[k].URL+"/*")
+		retrievedWebOrigins = append(retrievedWebOrigins, domains[k].URL)
+	}
+
+	m := make(map[string][]string)
+	m["redirectUris"] = retrievedRedirectURIs
+	m["webOrigins"] = retrievedWebOrigins
+
+	return m
+}
+
+func updateRedirectUrisWebOrigins(obj *v1alpha1.KeycloakClient) {
+	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
+		m := retrieveDomains(obj)
+		completeListRedirectUris := obj.Spec.Client.RedirectUris
+		apiEndpointRedirectUris := m["redirectUris"]
+		for k := range apiEndpointRedirectUris {
+			completeListRedirectUris = append(completeListRedirectUris, apiEndpointRedirectUris[k])
+		}
+
+		completeListWebOrigins := obj.Spec.Client.WebOrigins
+		apiEndpointWebOrigins := m["webOrigins"]
+		for i := range apiEndpointWebOrigins {
+			completeListWebOrigins = append(completeListWebOrigins, apiEndpointWebOrigins[i])
+		}
+
+		obj.Spec.Client.RedirectUris = completeListRedirectUris
+		obj.Spec.Client.WebOrigins = completeListWebOrigins
+	}
+}
+
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client create when client is nil")
@@ -158,6 +221,8 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 
 	obj.Spec.Client.ID = uid
 
+	updateRedirectUrisWebOrigins(obj)
+
 	return i.client.Update(i.context, obj)
 }
 
@@ -165,6 +230,9 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
+
+	updateRedirectUrisWebOrigins(obj)
+
 	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 }
 

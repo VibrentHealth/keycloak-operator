@@ -23,6 +23,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
+			APIDomain: "https://test.com",
 			RealmSelector: &v13.LabelSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
@@ -47,6 +48,11 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	reconciler := NewKeycloakClientReconciler(keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
+	// test the apiDomain
+	if cr.Spec.Client.ClientID == "test" && len(cr.Spec.APIDomain) != 0 {
+		cr.Spec.Client.RedirectUris = []string{"testURL"}
+	}
+
 	// then
 	assert.IsType(t, common.PingAction{}, desiredState[0])
 	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
@@ -54,6 +60,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientIDProperty])
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
+	assert.Equal(t, "testURL", cr.Spec.Client.RedirectUris[0])
 }
 
 func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClientID(t *testing.T) {
