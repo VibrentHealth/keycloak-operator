@@ -15,11 +15,11 @@ spec:
       serviceAccountName: keycloak-operator
       containers:
         - name: keycloak-operator
-          # Replace this with the built image name
-          image: quay.io/keycloak/keycloak-operator:main
+          # When developing operator changes, build a new docker image and update this reference i.e. keycloak-operator:latest
+          image: harbor.ssk8s.vibrenthealth.com/vibrent-ops/keycloak-operator:master
           command:
           - keycloak-operator
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
@@ -31,3 +31,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "keycloak-operator"
+      imagePullSecrets:
+        - name: harbor-ssk8s-vibrenthealth-com-vibrent-ops-read-only
