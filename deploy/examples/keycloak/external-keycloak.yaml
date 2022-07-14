@@ -3,11 +3,11 @@ kind: Keycloak
 metadata:
   name: example-external-keycloak
   labels:
-    app: external-sso
+    app: default-sso
 spec:
   unmanaged: true
   external:
     enabled: true
-    url: https://sub.keycloak
+    url: http://keycloak-http.default
     adminUsername: admin
     adminPassword: admin
