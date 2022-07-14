@@ -10,6 +10,7 @@ spec:
   template:
     metadata:
       labels:
+        helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
         name: keycloak-operator
       {{- if .Values.podAnnotations }}
       annotations:
