@@ -183,6 +183,11 @@ spec:
                       - alias
                       type: object
                     type: array
+                  browserSecurityHeaders:
+                    additionalProperties:
+                      type: string
+                    description: Browser Security Headers
+                    type: object
                   bruteForceProtected:
                     description: Brute Force Detection
                     type: boolean
