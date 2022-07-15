@@ -159,6 +159,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	SMTPServer map[string]string `json:"smtpServer,omitempty"`
 
+	// Browser Security Headers
+	// +optional
+	BrowserSecurityHeaders map[string]string `json:"browserSecurityHeaders,omitempty"`
+
 	// Login Theme
 	// +optional
 	LoginTheme string `json:"loginTheme,omitempty"`

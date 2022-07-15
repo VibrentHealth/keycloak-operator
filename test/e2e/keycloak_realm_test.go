@@ -90,6 +90,15 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 					"envelopeFrom":    "sso@example.com",
 					"ssl":             "",
 				},
+				BrowserSecurityHeaders: map[string]string{
+					"xFrameOptions":                   "SAMEORIGIN",
+					"contentSecurityPolicy":           "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+					"contentSecurityPolicyReportOnly": "",
+					"xContentTypeOptions":             "nosniff",
+					"xRobotsTag":                      "none",
+					"xXSSProtection":                  "1; mode=block",
+					"strictTransportSecurity":         "max-age=31536000; includeSubDomains",
+				},
 				Attributes: map[string]string{
 					"custom": "attribute",
 				},
