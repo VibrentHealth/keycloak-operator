@@ -13,6 +13,7 @@ Vibrent forked the Keycloak Operator to make the following custom changes:
 * Creation of a Helm Chart
 * Realm deletion protection flag in KeycloakRealm CRD
 * Support for merging new KeycloakClient with existing client: [AC-120153](https://vibrenthealth.atlassian.net/browse/AC-120153)
+* Support for the Browser Security Headers Configuration in KeycloakRealm CRD: [AC-120343](https://vibrenthealth.atlassian.net/browse/AC-120343)
 
 ### Updating Custom Resource Definitions (CRD)
 Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
