@@ -169,6 +169,23 @@ type KeycloakAPIRealm struct {
 	// Account Theme
 	// +optional
 	AccountTheme string `json:"accountTheme,omitempty"`
+
+	// Authentication. Browser Flow
+	// +optional
+	BrowserFlow string `json:"browserFlow,omitempty"`
+	// Authentication. Registration Flow
+	// +optional
+	RegistrationFlow string `json:"registrationFlow,omitempty"`
+	// Authentication. Direct Grant Flow
+	// +optional
+	DirectGrantFlow string `json:"directGrantFlow,omitempty"`
+	// Authentication. Reset Credentials Flow
+	// +optional
+	ResetCredentialsFlow string `json:"resetCredentialsFlow,omitempty"`
+	// Authentication. Client Authentication Flow
+	// +optional
+	ClientAuthenticationFlow string `json:"clientAuthenticationFlow,omitempty"`
+
 	// Admin Console Theme
 	// +optional
 	AdminTheme string `json:"adminTheme,omitempty"`
