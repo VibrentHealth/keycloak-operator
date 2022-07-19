@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 )
 
 var log = logf.Log.WithName("action_runner")
@@ -154,7 +153,7 @@ func (i *ClusterActionRunner) UpdateRealm(obj *v1alpha1.KeycloakRealm) error {
 
 type Domain struct {
 	ProgramCode string
-	ProgramID   string
+	ProgramID   int
 	URL         string
 }
 
@@ -166,7 +165,6 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error(err, "")
-		os.Exit(1)
 	}
 	response.Body.Close()
 	var domains []Domain
