@@ -19,6 +19,7 @@ import (
 )
 
 var log = logf.Log.WithName("action_runner")
+var vibrentLog = logf.Log.WithName("vibrent_action_runner")
 
 const (
 	authenticationConfigAlias string = "keycloak-operator-browser-redirector"
@@ -207,6 +208,8 @@ func updateRedirectUrisWebOrigins(obj *v1alpha1.KeycloakClient) {
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+
+	vibrentLog.Info(fmt.Sprintf("Performing CreateClient action for %v/%v - obj.Spec.Client.ID: %v", realm, obj.Spec.Client.ClientID, obj.Spec.Client.ID))
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client create when client is nil")
 	}
@@ -214,9 +217,11 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	uid, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
 
 	if err != nil {
+		vibrentLog.Info(fmt.Sprintf("Error during CreateClient action for %v/%v - Error is: %w", realm, obj.Spec.Client.ClientID, err))
 		return err
 	}
 
+	vibrentLog.Info(fmt.Sprintf("Successfully completed CreateClient action for %v/%v - returned uid: %v", realm, obj.Spec.Client.ClientID, uid))
 	obj.Spec.Client.ID = uid
 
 	updateRedirectUrisWebOrigins(obj)
@@ -225,13 +230,24 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 }
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+
+	vibrentLog.Info(fmt.Sprintf("Performing UpdateClient action for %v/%v - obj.Spec.Client.ID: %v", realm, obj.Spec.Client.ClientID, obj.Spec.Client.ID))
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
 
+	err := i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
+
+	if err != nil {
+		vibrentLog.Info(fmt.Sprintf("Error during UpdateClient action for %v/%v - Error is: %w", realm, obj.Spec.Client.ClientID, err))
+		return err
+	}
+
+	vibrentLog.Info(fmt.Sprintf("Successfully completed CreateClient action for %v/%v", realm, obj.Spec.Client.ClientID))
+
 	updateRedirectUrisWebOrigins(obj)
 
-	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
+	return err
 }
 
 func (i *ClusterActionRunner) CreateClientRole(obj *v1alpha1.KeycloakClient, role *v1alpha1.RoleRepresentation, realm string) error {
