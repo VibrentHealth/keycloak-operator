@@ -1064,6 +1064,42 @@ spec:
                   rememberMe:
                     description: Remember me
                     type: boolean
+                  requiredActions:
+                    description: Required Actions
+                    items:
+                      properties:
+                        alias:
+                          description: Alias
+                          type: string
+                        config:
+                          additionalProperties:
+                            type: string
+                          description: Config
+                          type: object
+                        defaultAction:
+                          description: DefaultAction
+                          type: boolean
+                        enabled:
+                          description: Enabled
+                          type: boolean
+                        name:
+                          description: Name
+                          type: string
+                        priority:
+                          description: Priority
+                          type: integer
+                        providerId:
+                          description: ProviderID
+                          type: string
+                      required:
+                      - alias
+                      - defaultAction
+                      - enabled
+                      - name
+                      - priority
+                      - providerId
+                      type: object
+                    type: array
                   resetCredentialsFlow:
                     description: Authentication. Reset Credentials Flow
                     type: string

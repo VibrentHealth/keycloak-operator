@@ -92,6 +92,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	AuthenticatorConfig []KeycloakAPIAuthenticatorConfig `json:"authenticatorConfig,omitempty"`
 
+	// Required Actions
+	// +optional
+	RequiredActions []KeycloakAPIRequiredActions `json:"requiredActions,omitempty"`
+
 	// Point keycloak to an external user provider to validate
 	// credentials or pull in identity information.
 	// +optional
@@ -455,6 +459,30 @@ type KeycloakAPIAuthenticatorConfig struct {
 	// ID
 	// +optional
 	ID string `json:"id,omitempty"`
+}
+
+type KeycloakAPIRequiredActions struct {
+	// Alias
+	Alias string `json:"alias"`
+
+	// Name
+	Name string `json:"name"`
+
+	// ProviderID
+	ProviderID string `json:"providerId"`
+
+	// Enabled
+	Enabled bool `json:"enabled"`
+
+	// DefaultAction
+	DefaultAction bool `json:"defaultAction"`
+
+	// Priority
+	Priority int `json:"priority"`
+
+	// Config
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
 }
 
 type RedirectorIdentityProviderOverride struct {
