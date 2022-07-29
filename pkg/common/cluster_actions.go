@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ import (
 )
 
 var log = logf.Log.WithName("action_runner")
+var vibrentClusterActionsLog = logf.Log.WithName("vibrent_action_runner")
 
 const (
 	authenticationConfigAlias string = "keycloak-operator-browser-redirector"
@@ -157,6 +159,14 @@ type Domain struct {
 	URL         string
 }
 
+/**
+* Call the endpoint configured in the client's APIDomian field. If the response can be parsed into a list of domains,
+* return the domains formatted into two separate lists, contained in a custom Map object. All URLs are forced into lower
+* case (see AC-120701)
+*
+* The Map object returned maps String keys "redirectUris" and "webOrigins" to String arrays. The arrays
+* contain the formatted lists of URLs that need to be merged into the client object on the keycloak server.
+**/
 func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 	response, err := http.Get(obj.Spec.APIDomain)
 	if err != nil {
@@ -175,8 +185,8 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 	retrievedRedirectURIs := []string{}
 	retrievedWebOrigins := []string{}
 	for k := range domains {
-		retrievedRedirectURIs = append(retrievedRedirectURIs, domains[k].URL+"/*")
-		retrievedWebOrigins = append(retrievedWebOrigins, domains[k].URL)
+		retrievedRedirectURIs = append(retrievedRedirectURIs, strings.ToLower(domains[k].URL+"/*"))
+		retrievedWebOrigins = append(retrievedWebOrigins, strings.ToLower(domains[k].URL))
 	}
 
 	m := make(map[string][]string)
@@ -188,6 +198,7 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 
 func updateRedirectUrisWebOrigins(obj *v1alpha1.KeycloakClient) {
 	if obj.Spec.Client.ClientID == subscriberWebClient && len(obj.Spec.APIDomain) != 0 {
+		vibrentClusterActionsLog.Info(fmt.Sprintf("Client is %v. Merging program URLs into client.", subscriberWebClient))
 		m := retrieveDomains(obj)
 		completeListRedirectUris := obj.Spec.Client.RedirectUris
 		apiEndpointRedirectUris := m["redirectUris"]
@@ -207,6 +218,9 @@ func updateRedirectUrisWebOrigins(obj *v1alpha1.KeycloakClient) {
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+	vibrentClusterActionsLog.Info(fmt.Sprintf("Performing CreateClient action for %v/%v - obj.Spec.Client.ID: %v", realm, obj.Spec.Client.ClientID, obj.Spec.Client.ID))
+	updateRedirectUrisWebOrigins(obj) // AC-118431
+
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client create when client is nil")
 	}
@@ -214,24 +228,44 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	uid, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
 
 	if err != nil {
+		vibrentClusterActionsLog.Info(fmt.Sprintf("Error during CreateClient action for %v/%v - Error is: %v", realm, obj.Spec.Client.ClientID, err))
 		return err
 	}
 
+	vibrentClusterActionsLog.Info(fmt.Sprintf("Successfully completed CreateClient action for %v/%v - returned uid: %v", realm, obj.Spec.Client.ClientID, uid))
 	obj.Spec.Client.ID = uid
 
-	updateRedirectUrisWebOrigins(obj)
-
+	// This client update request commits the CR modifications to the resource in the cluster.
+	// Here in CreateClient, it is intended to preserve the uid of the newly created client on the Keycloak Server, but
+	// it will also persist any redirect or origin URLs that come from a configured API endpoint. This will make them
+	// unremovable without a deployment (minor issue).
+	//
+	// By default, the operator does not do this for UpdateClient. Currently there isn't an explicit need for us to add it.
 	return i.client.Update(i.context, obj)
 }
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+	vibrentClusterActionsLog.Info(fmt.Sprintf("Performing UpdateClient action for %v/%v - obj.Spec.Client.ID: %v", realm, obj.Spec.Client.ClientID, obj.Spec.Client.ID))
+	updateRedirectUrisWebOrigins(obj) // AC-118431
+
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
 
-	updateRedirectUrisWebOrigins(obj)
+	err := i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 
-	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
+	if err != nil {
+		vibrentClusterActionsLog.Info(fmt.Sprintf("Error during UpdateClient action for %v/%v - Error is: %v", realm, obj.Spec.Client.ClientID, err))
+		return err
+	}
+
+	vibrentClusterActionsLog.Info(fmt.Sprintf("Successfully completed UpdateClient action for %v/%v", realm, obj.Spec.Client.ClientID))
+
+	// This would persist the results of `updateRedirectUrisWebOrigin(obj)` in the CR on the cluster. Would be consistent
+	// with CreateClient, but would require additional testing.
+	// return i.client.Update(i.context, obj)
+
+	return err // will be nil
 }
 
 func (i *ClusterActionRunner) CreateClientRole(obj *v1alpha1.KeycloakClient, role *v1alpha1.RoleRepresentation, realm string) error {
