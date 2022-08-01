@@ -12,7 +12,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-var vibrentLog = logf.Log.WithName("vibrent_client_state")
+var vibrentClientStateLog = logf.Log.WithName("vibrent_client_state")
 
 type ClientState struct {
 	Client                  *kc.KeycloakAPIClient
@@ -48,17 +48,17 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 	// In the new behavior, if `cr.Spec.Client.ID` is empty, first a query of all clients present is done. If a matching client is found by
 	// `cr.Spec.Client.ClientID`, then it's ID is added to the spec and the process is allowed to continue.
 	if cr.Spec.Client.ID == "" {
-		vibrentLog.Info(fmt.Sprintf("Empty Client.ID found for %v/%v. Doing lookup by name.", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
+		vibrentClientStateLog.Info(fmt.Sprintf("Empty Client.ID found for %v/%v. Doing lookup by name.", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
 		allClients, err := realmClient.ListClients(i.Realm.Spec.Realm.Realm)
 
 		if err != nil {
-			vibrentLog.Error(err, fmt.Sprintf("Error fetching all clients for %v/%v.", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
+			vibrentClientStateLog.Error(err, fmt.Sprintf("Error fetching all clients for %v/%v.", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
 			return err
 		}
 
 		for _, c := range allClients {
 			if c.ClientID == cr.Spec.Client.ClientID {
-				vibrentLog.Info(fmt.Sprintf("Found matching client for %v/%v with ID %v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID, c.ID))
+				vibrentClientStateLog.Info(fmt.Sprintf("Found matching client for %v/%v with ID %v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID, c.ID))
 				cr.Spec.Client.ID = c.ID
 				break
 			}
@@ -67,12 +67,12 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 
 	// If the new logic did not set `cr.Spec.Client.ID`, then return nil like original behavior did.
 	if cr.Spec.Client.ID == "" {
-		vibrentLog.Info(fmt.Sprintf("No exisiting client found for %v/%v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
+		vibrentClientStateLog.Info(fmt.Sprintf("No exisiting client found for %v/%v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID))
 		return nil
 	}
 
 	// Now `cr.Spec.Client.ID` must exist and there was a pre-existing or merged match found. We will fetch it directly to get full object.
-	vibrentLog.Info(fmt.Sprintf("Client has existing ID for %v/%v: %v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID, cr.Spec.Client.ID))
+	vibrentClientStateLog.Info(fmt.Sprintf("Client has existing ID for %v/%v: %v", i.Realm.Spec.Realm.Realm, cr.Spec.Client.ClientID, cr.Spec.Client.ID))
 	client, err := realmClient.GetClient(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
 
 	if err != nil {
