@@ -16,6 +16,7 @@ Vibrent forked the Keycloak Operator to make the following custom changes:
 * Support for the Browser Security Headers Configuration in KeycloakRealm CRD: [AC-120343](https://vibrenthealth.atlassian.net/browse/AC-120343)
 * Support for authentication flow bindings in the KeycloakRealm CRD
 * Support for managing realm's required actions from the KeycloakRealm CRD: [AC-120810](https://vibrenthealth.atlassian.net/browse/AC-120810) and [AC-120811](https://vibrenthealth.atlassian.net/browse/AC-120811)
+* Increase reconcile concurrency for client controller to 5: [AC-122514](https://vibrenthealth.atlassian.net/browse/AC-122514)
 
 ### Updating Custom Resource Definitions (CRD)
 Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
