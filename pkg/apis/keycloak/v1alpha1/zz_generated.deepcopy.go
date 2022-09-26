@@ -612,6 +612,61 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.SsoSessionIdleTimeout != nil {
+		in, out := &in.SsoSessionIdleTimeout, &out.SsoSessionIdleTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.SsoSessionMaxLifespan != nil {
+		in, out := &in.SsoSessionMaxLifespan, &out.SsoSessionMaxLifespan
+		*out = new(int32)
+		**out = **in
+	}
+	if in.SsoSessionIdleTimeoutRememberMe != nil {
+		in, out := &in.SsoSessionIdleTimeoutRememberMe, &out.SsoSessionIdleTimeoutRememberMe
+		*out = new(int32)
+		**out = **in
+	}
+	if in.SsoSessionMaxLifespanRememberMe != nil {
+		in, out := &in.SsoSessionMaxLifespanRememberMe, &out.SsoSessionMaxLifespanRememberMe
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OfflineSessionIdleTimeout != nil {
+		in, out := &in.OfflineSessionIdleTimeout, &out.OfflineSessionIdleTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OfflineSessionMaxLifespan != nil {
+		in, out := &in.OfflineSessionMaxLifespan, &out.OfflineSessionMaxLifespan
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ClientSessionIdleTimeout != nil {
+		in, out := &in.ClientSessionIdleTimeout, &out.ClientSessionIdleTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ClientSessionMaxLifespan != nil {
+		in, out := &in.ClientSessionMaxLifespan, &out.ClientSessionMaxLifespan
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ClientOfflineSessionIdleTimeout != nil {
+		in, out := &in.ClientOfflineSessionIdleTimeout, &out.ClientOfflineSessionIdleTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ClientOfflineSessionMaxLifespan != nil {
+		in, out := &in.ClientOfflineSessionMaxLifespan, &out.ClientOfflineSessionMaxLifespan
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OfflineSessionMaxLifespanEnabled != nil {
+		in, out := &in.OfflineSessionMaxLifespanEnabled, &out.OfflineSessionMaxLifespanEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.UserManagedAccessAllowed != nil {
 		in, out := &in.UserManagedAccessAllowed, &out.UserManagedAccessAllowed
 		*out = new(bool)

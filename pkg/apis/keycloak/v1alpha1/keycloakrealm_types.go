@@ -228,6 +228,50 @@ type KeycloakAPIRealm struct {
 	// +optional
 	AccessTokenLifespan *int32 `json:"accessTokenLifespan,omitempty"`
 
+	// SSO Session Idle
+  // +optional
+  SsoSessionIdleTimeout *int32 `json:"ssoSessionIdleTimeout,omitempty"`
+
+  // SSO Session Max
+  // +optional
+  SsoSessionMaxLifespan *int32 `json:"ssoSessionMaxLifespan,omitempty"`
+
+  // SSO Session Idle Remember Me
+  // +optional
+  SsoSessionIdleTimeoutRememberMe *int32 `json:"ssoSessionIdleTimeoutRememberMe,omitempty"`
+
+  // SSO Session Max Remember Me
+  // +optional
+  SsoSessionMaxLifespanRememberMe *int32 `json:"ssoSessionMaxLifespanRememberMe,omitempty"`
+
+  // Offline Session Idle
+  // +optional
+  OfflineSessionIdleTimeout *int32 `json:"offlineSessionIdleTimeout,omitempty"`
+
+  // Offline Session Max Limited
+  // +optional
+  OfflineSessionMaxLifespan *int32 `json:"offlineSessionMaxLifespan,omitempty"`
+
+  // Client Session Idle
+  // +optional
+  ClientSessionIdleTimeout *int32 `json:"clientSessionIdleTimeout,omitempty"`
+
+  // Client Session Max
+  // +optional
+  ClientSessionMaxLifespan *int32 `json:"clientSessionMaxLifespan,omitempty"`
+
+  // Client Offline Session Idle
+  // +optional
+  ClientOfflineSessionIdleTimeout *int32 `json:"clientOfflineSessionIdleTimeout,omitempty"`
+
+  // Client Offline Session Max
+  // +optional
+  ClientOfflineSessionMaxLifespan *int32 `json:"clientOfflineSessionMaxLifespan,omitempty"`
+
+  // Offline Session Max Limited
+  // +optional
+  OfflineSessionMaxLifespanEnabled *bool `json:"offlineSessionMaxLifespanEnabled,omitempty"`
+
 	// User Managed Access Allowed
 	// +optional
 	UserManagedAccessAllowed *bool `json:"userManagedAccessAllowed,omitempty"`
