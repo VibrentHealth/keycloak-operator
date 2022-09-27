@@ -197,6 +197,14 @@ spec:
                   clientAuthenticationFlow:
                     description: Authentication. Client Authentication Flow
                     type: string
+                  clientOfflineSessionIdleTimeout:
+                    description: Client Offline Session Idle
+                    format: int32
+                    type: integer
+                  clientOfflineSessionMaxLifespan:
+                    description: Client Offline Session Max
+                    format: int32
+                    type: integer
                   clientScopeMappings:
                     additionalProperties:
                       items:
@@ -267,6 +275,14 @@ spec:
                           type: array
                       type: object
                     type: array
+                  clientSessionIdleTimeout:
+                    description: Client Session Idle
+                    format: int32
+                    type: integer
+                  clientSessionMaxLifespan:
+                    description: Client Session Max
+                    format: int32
+                    type: integer
                   clients:
                     description: A set of Keycloak Clients.
                     items:
@@ -1012,6 +1028,17 @@ spec:
                     description: Minimum Quick Login Wait
                     format: int32
                     type: integer
+                  offlineSessionIdleTimeout:
+                    description: Offline Session Idle
+                    format: int32
+                    type: integer
+                  offlineSessionMaxLifespan:
+                    description: Offline Session Max Limited
+                    format: int32
+                    type: integer
+                  offlineSessionMaxLifespanEnabled:
+                    description: Offline Session Max Limited
+                    type: boolean
                   otpPolicyAlgorithm:
                     description: OTP Policy Algorithm
                     type: string
@@ -1241,6 +1268,22 @@ spec:
                   sslRequired:
                     description: Require SSL
                     type: string
+                  ssoSessionIdleTimeout:
+                    description: SSO Session Idle
+                    format: int32
+                    type: integer
+                  ssoSessionIdleTimeoutRememberMe:
+                    description: SSO Session Idle Remember Me
+                    format: int32
+                    type: integer
+                  ssoSessionMaxLifespan:
+                    description: SSO Session Max
+                    format: int32
+                    type: integer
+                  ssoSessionMaxLifespanRememberMe:
+                    description: SSO Session Max Remember Me
+                    format: int32
+                    type: integer
                   supportedLocales:
                     description: Supported Locales
                     items:
