@@ -5,11 +5,16 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
+	
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+var log = logf.Log.WithName("k8sutil")
 
 // GetWatchNamespace returns the Namespace the operator should be watching for changes
 func GetWatchNamespace() (string, error) {
@@ -22,6 +27,8 @@ func GetWatchNamespace() (string, error) {
 	if !found {
 		return "", ErrWatchNamespaceEnvVar
 	}
+	
+	log.Info(fmt.Sprintf("WATCH_NAMESPACE: %s", ns))
 	return ns, nil
 }
 
@@ -35,6 +42,19 @@ var ErrRunLocal = fmt.Errorf("operator run mode forced to local")
 
 // ErrWatchNamespaceEnvVar indicates that the namespace environment variable is not set
 var ErrWatchNamespaceEnvVar = fmt.Errorf("watch namespace env var must be set")
+
+// GetSyncPeriod returns a time based on env variable SYNC_PERIOD, or 5 minutes if unset or empty_string
+func GetSyncPeriod() (time.Duration, error) {
+	var syncPeriodEnvVar = "SYNC_PERIOD"
+	
+	sp, found := os.LookupEnv(syncPeriodEnvVar)
+	if !found || sp == "" {
+		log.Info("SYNC_PERIOD unset or empty. Default is 5m.")
+		return time.Minute * 5, nil
+	}
+	return time.ParseDuration(sp)
+	
+}
 
 // GetOperatorNamespace returns the namespace the operator should be running in.
 func GetOperatorNamespace() (string, error) {
