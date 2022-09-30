@@ -105,7 +105,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	syncPeriod := time.Minute * 5
+	// This syncPeriod was set to a very short value (5 min) upstream for as specific reason. See: https://github.com/keycloak/keycloak-operator/pull/322
+	// Triggers the reconcilation loop after &syncPeriod amount of NO CHANGE. Intended as a last resort (watch mechanism is preferred). Default value is 10h.
+	// syncPeriod := time.Minute * 5
+	syncPeriod, err := k8sutil.GetSyncPeriod()
+	if err != nil {
+		log.Error(err, "Failed to parse sync period")
+		os.Exit(1)
+	}
 
 	// Set default manager options
 	options := manager.Options{
