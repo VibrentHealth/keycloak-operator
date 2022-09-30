@@ -1,24 +1,17 @@
-## Related GH Issue
-Closes <!-- Your issue ID -->
+<!--- Provide a general summary of your changes in the Title above -->
 
-## Additional Information
-<!-- What/Why/How or any other context you feel is necessary.) -->
+## Description
+<!--- Describe your changes in detail -->
 
-<!-- (Add this section if applicable)
-## Verification Steps
-
-Add the steps required to check this change. Following an example.
-
-1. Go to `XX >> YY >> SS`
-2. Create a new item `N` with the info `X`
-3. Try to edit this item
-4. Check if in the left menu the feature X is not so long present.
--->
+## JIRA reference
+<!--- If it fixes an open issue, please link to the issue here. use syntax <PROJECT>-####-->
 
 ## Checklist:
-- [ ] Automated Tests
-- [ ] [Documentation](https://github.com/keycloak/keycloak-documentation) changes if necessary
-- [ ] (If required) Discussed on [Keycloak DEV](https://groups.google.com/forum/#!forum/keycloak-dev)
+- [ ] Run `make code/lint` and apply changes.
+- [ ] Run `make code/gen` and apply changes as seperate commit.
+- [ ] Git and Jenkines pipelines all pass
+- [ ] Set new chart version
+- [ ] Updates to README.md (update change-log at minimum)
 
 <!-- (Add this section if applicable)
 ## Additional Notes 
