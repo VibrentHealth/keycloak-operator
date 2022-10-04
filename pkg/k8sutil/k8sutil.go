@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
-	
+
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -27,7 +28,7 @@ func GetWatchNamespace() (string, error) {
 	if !found {
 		return "", ErrWatchNamespaceEnvVar
 	}
-	
+
 	log.Info(fmt.Sprintf("WATCH_NAMESPACE: %s", ns))
 	return ns, nil
 }
@@ -46,14 +47,43 @@ var ErrWatchNamespaceEnvVar = fmt.Errorf("watch namespace env var must be set")
 // GetSyncPeriod returns a time based on env variable SYNC_PERIOD, or 5 minutes if unset or empty_string
 func GetSyncPeriod() (time.Duration, error) {
 	var syncPeriodEnvVar = "SYNC_PERIOD"
-	
+
 	sp, found := os.LookupEnv(syncPeriodEnvVar)
 	if !found || sp == "" {
 		log.Info("SYNC_PERIOD unset or empty. Default is 5m.")
 		return time.Minute * 5, nil
 	}
+
+	log.Info(fmt.Sprintf("SYNC_PERIOD value read from ENV: %s", sp))
 	return time.ParseDuration(sp)
-	
+}
+
+// GetClientMaxConcurrentReconciles returns a time based on env variable CLIENT_MAX_CONCURRENT_RECONCILES, or 5 minutes if unset or empty_string
+func GetClientMaxConcurrentReconciles() (int, error) {
+	var mcrEnvVar = "CLIENT_MAX_CONCURRENT_RECONCILES"
+
+	env, found := os.LookupEnv(mcrEnvVar)
+	if !found || env == "" {
+		log.Info("CLIENT_MAX_CONCURRENT_RECONCILES unset or empty. Default is 1.")
+		return 1, nil
+	}
+
+	log.Info(fmt.Sprintf("CLIENT_MAX_CONCURRENT_RECONCILES value read from ENV: %s", env))
+	return strconv.Atoi(env)
+}
+
+// GetRealmMaxConcurrentReconciles returns a time based on env variable REALM_MAX_CONCURRENT_RECONCILES, or 5 minutes if unset or empty_string
+func GetRealmMaxConcurrentReconciles() (int, error) {
+	var mcrEnvVar = "REALM_MAX_CONCURRENT_RECONCILES"
+
+	env, found := os.LookupEnv(mcrEnvVar)
+	if !found || env == "" {
+		log.Info("REALM_MAX_CONCURRENT_RECONCILES unset or empty. Default is 1.")
+		return 1, nil
+	}
+
+	log.Info(fmt.Sprintf("REALM_MAX_CONCURRENT_RECONCILES value read from ENV: %s", env))
+	return strconv.Atoi(env)
 }
 
 // GetOperatorNamespace returns the namespace the operator should be running in.

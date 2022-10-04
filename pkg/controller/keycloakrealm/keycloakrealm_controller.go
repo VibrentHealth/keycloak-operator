@@ -3,7 +3,10 @@ package keycloakrealm
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
+
+	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -56,8 +59,15 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Retrieve MaxConcurrentReconciles from env variable. Default is 1.
+	mcr, err := k8sutil.GetRealmMaxConcurrentReconciles()
+	if err != nil {
+		log.Error(err, "Failed to parse max concurrent reconciles for realm.")
+		os.Exit(1)
+	}
+
 	// Create a new controller
-	c, err := controller.New(ControllerName, mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(ControllerName, mgr, controller.Options{Reconciler: r, MaxConcurrentReconciles: mcr})
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 
@@ -106,7 +105,7 @@ func main() {
 	}
 
 	// This syncPeriod was set to a very short value (5 min) upstream for as specific reason. See: https://github.com/keycloak/keycloak-operator/pull/322
-	// Triggers the reconcilation loop after &syncPeriod amount of NO CHANGE. Intended as a last resort (watch mechanism is preferred). Default value is 10h.
+	// Triggers the reconciliation loop after &syncPeriod amount of NO CHANGE. Intended as a last resort (watch mechanism is preferred). Default value is 10h.
 	// syncPeriod := time.Minute * 5
 	syncPeriod, err := k8sutil.GetSyncPeriod()
 	if err != nil {
