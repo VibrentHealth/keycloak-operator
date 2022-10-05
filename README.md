@@ -4,9 +4,10 @@ A Kubernetes Operator based on the Operator SDK for creating and syncing resourc
 ## Vibrent Specific Documentation
 The Vibrent documentation for the keycloak operator can be found at the following conflunece page: [Keycloak Operator](https://agile.vignetcorp.com:8086/confluence/display/AC/Keycloak+Operator).
 
-### Custom Updates
-Vibrent forked the Keycloak Operator to make the following custom changes:
+### Vibrent Changelog
+Vibrent forked the Keycloak Operator to make the following custom changes. Broken up by production releases.
 
+#### Initial Release (1.6.X)
 * Support for custom attributes on Realms 
 * Realm update functionality
 * Managing Realms on Unmanaged Keycloak instances
@@ -19,7 +20,10 @@ Vibrent forked the Keycloak Operator to make the following custom changes:
 * Increase reconcile concurrency for client controller to 5: [AC-122514](https://vibrenthealth.atlassian.net/browse/AC-122514)
 * Increase reconcile concurrency for client controller to 20: [AC-122819](https://vibrenthealth.atlassian.net/browse/AC-122819)
 * Increase reconcile concurrency for client controller to 50: [AC-123079](https://vibrenthealth.atlassian.net/browse/AC-123079)
+
+#### 1.7.X
 * Update realm CRD with realm settings fields. Fields values are default, not set to anything: [AC-124726](https://vibrenthealth.atlassian.net/browse/AC-124726)
+* Chart and init configuration to control operator SYNC_PERIOD, and concurrency for realm and client loops.
 
 ### Updating Custom Resource Definitions (CRD)
 Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
