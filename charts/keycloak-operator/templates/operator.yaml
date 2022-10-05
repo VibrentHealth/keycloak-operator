@@ -57,3 +57,9 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "keycloak-operator"
+            - name: SYNC_PERIOD
+              value: {{ .Values.syncPeriod | quote }}
+            - name: CLIENT_MAX_CONCURRENT_RECONCILES
+              value: {{ .Values.clientMaxConcurrentReconciles | quote }}
+            - name: REALM_MAX_CONCURRENT_RECONCILES
+              value: {{ .Values.realmMaxConcurrentReconciles | quote }}
