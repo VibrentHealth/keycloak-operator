@@ -22,11 +22,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/go-logr/logr"
 )
 
 const (
 	RealmFinalizer    = "realm.cleanup"
-	RequeueDelayError = 5 * time.Second
+	RequeueDelayError = 1 * time.Minute
 	ControllerName    = "controller_keycloakrealm"
 )
 
@@ -108,7 +110,7 @@ type ReconcileKeycloakRealm struct {
 // and what is in the KeycloakRealm.Spec
 func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling KeycloakRealm")
+	reqLogger.Info(fmt.Sprintf("Reconciling KeycloakRealm %s/%s", request.Namespace, request.Name))
 
 	// Fetch the KeycloakRealm instance
 	instance := &kc.KeycloakRealm{}
@@ -118,29 +120,37 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
+			reqLogger.Info("KeycloakRealm CR not found by kubernetes.")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		reqLogger.Error(err, "Kubernetes error reading KeycloakRealm CR.")
 		return reconcile.Result{}, err
 	}
 
 	if instance.Spec.Unmanaged {
-		return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
+		reqLogger.Info("KeycloakRealm is Unmanaged.")
+		// This will still be requeued if manageSuccess function returns non-nil error
+		err := r.manageSuccess(instance, reqLogger, instance.DeletionTimestamp != nil)
+		if err != nil {
+			reqLogger.Error(err, "Error in KeycloakRealm success handler. Realm will be requeued.")
+		}
+		return reconcile.Result{Requeue: false}, err
 	}
 
 	// If no selector is set we can't figure out which Keycloak instance this realm should
 	// be added to. Skip reconcile until a selector has been set.
 	if instance.Spec.InstanceSelector == nil {
-		log.Info(fmt.Sprintf("realm %v/%v has no instance selector and will be ignored", instance.Namespace, instance.Name))
+		reqLogger.Info(fmt.Sprintf("realm %v/%v has no instance selector and will be ignored", instance.Namespace, instance.Name))
 		return reconcile.Result{Requeue: false}, nil
 	}
 
 	keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, instance.Spec.InstanceSelector)
 	if err != nil {
-		return r.ManageError(instance, err)
+		return r.ManageError(instance, reqLogger, err)
 	}
 
-	log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
+	reqLogger.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
 
 	// The realm may be applicable to multiple keycloak instances,
 	// process all of them
@@ -151,13 +161,13 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak, false)
 
 		if err != nil {
-			return r.ManageError(instance, err)
+			return r.ManageError(instance, reqLogger, err)
 		}
 
 		// Compute the current state of the realm
 		realmState := common.NewRealmState(r.context, keycloak)
 
-		log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",
+		reqLogger.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",
 			keycloak.Namespace,
 			keycloak.Name,
 			instance.Namespace,
@@ -165,7 +175,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 
 		err = realmState.Read(instance, authenticated, r.client)
 		if err != nil {
-			return r.ManageError(instance, err)
+			return r.ManageError(instance, reqLogger, err)
 		}
 
 		// Figure out the actions to keep the realms up to date with
@@ -177,21 +187,26 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		// Run all actions to keep the realms updated
 		err = actionRunner.RunAll(desiredState)
 		if err != nil {
-			return r.ManageError(instance, err)
+			return r.ManageError(instance, reqLogger, err)
 		}
 	}
 
-	return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
+	err = r.manageSuccess(instance, reqLogger, instance.DeletionTimestamp != nil)
+	if err != nil {
+		reqLogger.Error(err, "Error in KeycloakRealm success handler. Realm will be requeued.")
+	}
+	return reconcile.Result{Requeue: false}, err
 }
 
-func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted bool) error {
+func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, reqLogger logr.Logger, deleted bool) error {
 	realm.Status.Ready = true
-	realm.Status.Message = ""
+	realm.Status.Message = fmt.Sprintf("Successful Reconciliation at %s", time.Now().String())
 	realm.Status.Phase = v1alpha1.PhaseReconciling
 
+	reqLogger.Info("Pushing successful reconcile to CR. Id: %s, Message: %s", realm.Spec.Realm.ID, realm.Status.Message)
 	err := r.client.Status().Update(r.context, realm)
 	if err != nil {
-		log.Error(err, "unable to update status")
+		reqLogger.Error(err, "unable to update status")
 	}
 
 	// Finalizer already set?
@@ -205,13 +220,14 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 
 	// Resource created and finalizer exists: nothing to do
 	if !deleted && finalizerExists {
+		reqLogger.Info("Resource created and finalizer exists: nothing to do")
 		return nil
 	}
 
 	// Resource created and finalizer does not exist: add finalizer
 	if !deleted && !finalizerExists {
 		realm.Finalizers = append(realm.Finalizers, RealmFinalizer)
-		log.Info(fmt.Sprintf("added finalizer to keycloak realm %v/%v",
+		reqLogger.Info(fmt.Sprintf("added finalizer to keycloak realm %v/%v",
 			realm.Namespace,
 			realm.Spec.Realm.Realm))
 
@@ -222,7 +238,7 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 	newFinalizers := []string{}
 	for _, finalizer := range realm.Finalizers {
 		if finalizer == RealmFinalizer {
-			log.Info(fmt.Sprintf("removed finalizer from keycloak realm %v/%v",
+			reqLogger.Info(fmt.Sprintf("removed finalizer from keycloak realm %v/%v",
 				realm.Namespace,
 				realm.Spec.Realm.Realm))
 
@@ -235,16 +251,17 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 	return r.client.Update(r.context, realm)
 }
 
-func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, issue error) (reconcile.Result, error) {
+func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, reqLogger logr.Logger, issue error) (reconcile.Result, error) {
 	r.recorder.Event(realm, "Warning", "ProcessingError", issue.Error())
 
 	realm.Status.Message = issue.Error()
 	realm.Status.Ready = false
 	realm.Status.Phase = v1alpha1.PhaseFailing
 
+	reqLogger.Info("Pushing unsuccessful reconcile to CR. Will be requeued in 1 minute. Id: %s, Message: %s", realm.Spec.Realm.ID, realm.Status.Message)
 	err := r.client.Status().Update(r.context, realm)
 	if err != nil {
-		log.Error(err, "unable to update status")
+		reqLogger.Error(err, "unable to update status")
 	}
 
 	return reconcile.Result{
