@@ -18,6 +18,11 @@ clusterIdentifier: "random-cluster-id"
 debug: true
 watchNamespace: ""
 
+# Upstream defaults for local usage
+syncPeriod: "5m"
+clientMaxConcurrentReconciles: "1"
+realmMaxConcurrentReconciles: "1"
+
 podAnnotations: {}
 
 resources: {}
