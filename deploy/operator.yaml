@@ -31,5 +31,11 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "keycloak-operator"
+            - name: CLIENT_MAX_CONCURRENT_RECONCILES
+              value: "1"
+            - name: REALM_MAX_CONCURRENT_RECONCILES
+              value: "1"
+            - name: SYNC_PERIOD
+              value: "30m"
       imagePullSecrets:
         - name: harbor-ssk8s-vibrenthealth-com-vibrent-ops-read-only

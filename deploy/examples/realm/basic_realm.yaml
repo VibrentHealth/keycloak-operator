@@ -54,6 +54,51 @@ spec:
     adminEventsDetailsEnabled: false
     identityProviders: [ ]
     internationalizationEnabled: false
+    roles:
+      realm:
+        - clientRole: false
+          composite: false
+          description: ${role_uma_authorization}
+          name: uma_authorization
+        - clientRole: false
+          composite: false
+          name: ROLE_KEYCLOAK
+        - clientRole: false
+          composite: false
+          name: ROLE_AUTOMATION
+        - clientRole: false
+          composite: true
+          composites:
+            realm:
+              - offline_access
+          name: ROLE_DEACTIVATED_USER
+        - clientRole: false
+          composite: false
+          name: ROLE_DRC
+        - clientRole: false
+          composite: false
+          name: ROLE_DRC_INTERNAL
+        - clientRole: false
+          composite: false
+          name: ROLE_MC_CATI_INTERVIEWER
+        - clientRole: false
+          composite: true
+          composites:
+            realm:
+              - offline_access
+          name: ROLE_USER
+        - clientRole: false
+          composite: false
+          name: ROLE_FILE_ADMIN
+        - clientRole: false
+          composite: false
+          name: ROLE_FULFILLMENT
+        - clientRole: false
+          composite: true
+          composites:
+            realm:
+              - ROLE_FILE_ADMIN
+          name: ROLE_ADMIN
     authenticationFlows:
       - alias: Choose Token/Email
         providerId: basic-flow
