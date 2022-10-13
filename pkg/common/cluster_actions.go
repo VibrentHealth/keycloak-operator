@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -17,6 +18,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	
 )
 
 var log = logf.Log.WithName("action_runner")
@@ -57,6 +59,7 @@ type ActionRunner interface {
 	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
 	AddDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
 	DeleteDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
+	UpdateAuthenticationFlows(obj *v1alpha1.KeycloakRealm) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -467,6 +470,97 @@ func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error 
 	return nil
 }
 
+func (i *ClusterActionRunner) UpdateAuthenticationFlows(obj *v1alpha1.KeycloakRealm) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform authentication flow configure when client is nil")
+	}
+	
+	return i.configureAuthenticationFlows(obj)
+}
+
+/*
+* PRIVATE BUSINESS FUNCTIONS
+*/
+
+
+
+func (i *ClusterActionRunner) configureAuthenticationFlows(obj *v1alpha1.KeycloakRealm) error {
+	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name)
+
+	realmName := obj.Spec.Realm.Realm
+	
+	// The CR definition defines ALL flows and subflows in a big list.
+	allDesiredFlows := obj.Spec.Realm.AuthenticationFlows
+	
+	// The keycloak API returns only the TOP LEVEL flows.
+	topLevelActualFlows, err := i.keycloakClient.ListAuthenticationFlows(realmName)
+	if err != nil {
+		return err
+	}
+	
+	if len(topLevelActualFlows) == 0 {
+		actionLogger.Info("Error: No existing authentication flows found")
+		return nil
+	}
+	
+	// Gather names (use aliases. top level, custom flows only)
+	actualFlowNames := []string{}
+	desiredFlowNames := []string{}
+	for _, dflow := range allDesiredFlows {
+		if dflow.TopLevel == true && dflow.BuiltIn != true {
+			desiredFlowNames = append(desiredFlowNames, dflow.Alias)
+		}
+	}
+	for _, aflow := range topLevelActualFlows {
+		if aflow.TopLevel == true && aflow.BuiltIn != true {
+			actualFlowNames = append(actualFlowNames, aflow.Alias)
+		}
+	}
+	
+	// Top Level Comparison
+	flowsToRemove := difference(actualFlowNames, desiredFlowNames)
+	flowsToAdd := difference(desiredFlowNames, actualFlowNames)
+	flowsToCompare := difference(union(actualFlowNames, desiredFlowNames), append(flowsToAdd, flowsToRemove...))
+	
+	// Do updates
+	for _, name := range flowsToRemove {
+		actionLogger.Info(fmt.Sprintf("Deleting Authentication Flow %s is not supported", name))
+//		actionLogger.Info(fmt.Sprintf("Removing Authentication Flow: %s", name))
+//		err := i.keycloakClient.DeleteAuthenticationFlow(realmName, getFlowInList(name, topLevelActualFlows))
+//		if err != nil {
+//			actionLogger.Info(fmt.Sprintf("Unable to delete authentication flow. ID: %s, Alias: %s", getFlowInList(name, topLevelActualFlows).ID, name))
+//			return err
+//		}
+	}
+	for _, name := range flowsToAdd {
+		actionLogger.Info(fmt.Sprintf("Adding Authentication Flow: %s", name))
+		flow := getFlowInList(name, allDesiredFlows)
+		uid, err := i.keycloakClient.CreateAuthenticationFlow(realmName, flow)
+		if err != nil {
+			actionLogger.Info(fmt.Sprintf("Error: Unable to create authentication flow: %s", name))
+			return err
+		}
+		
+		// Can you write ID into CR here?
+		flow.ID = uid
+	}
+	for _, name := range flowsToCompare {
+		actionLogger.Info(fmt.Sprintf("Compare: %s", name))
+		aflow := getFlowInListOfPointers(name, topLevelActualFlows)
+		dflow := getFlowInList(name, allDesiredFlows)
+		if deepCompareAuthFlows(dflow, aflow, allDesiredFlows) {
+			actionLogger.Info(fmt.Sprintf("%s is diff. %s/%s", name, aflow.ID, dflow.ID))
+			err := i.keycloakClient.UpdateAuthenticationFlow(realmName, dflow)
+			if err != nil {
+				actionLogger.Info(fmt.Sprintf("Error: Unable to update authentication flow: %s", name))
+				return err
+			}
+		}
+	}
+	
+	return nil
+}
+
 func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, obj *v1alpha1.KeycloakRealm) error {
 	realmName := obj.Spec.Realm.Realm
 	authenticationExecutionInfo, err := i.keycloakClient.ListAuthenticationExecutionsForFlow(flow, realmName)
@@ -508,6 +602,173 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 
 	return nil
 }
+
+/*
+* PRIVATE LOGIC FUNCTIONS
+*/
+
+/** 
+ * dflow: A pointer to the desired KeycloakAPIAuthenticationFlow state, from the CR definition
+ * aflow: A pointer to the current KeycloakAPIAuthenticationFlow state, queried from the Keycloak API.
+ * allDesiredFlows: The full list of desired flows form the CR definition, used to recurse into sub-flows.
+ * 
+ * Performs a deep comparison between the "current authentication flow" state, represented as `aflow`, and the "desired authentication flow" state, represented as `dflow`.
+ * 1. First, compares top level attributes `ProviderID` and `Description`. KeycloakAPIAuthenticationFlow attributes `TopLevel` and `BuiltIn` are currently ignored when comparing.
+ * 2. Next, sort the `AuthenticationExecution` list from the desired and actual flow by `Priority`, which indicates their intended execution order.
+ * 3. Next, for each `AuthenticationExecution` child in the desired flow compare it to the oject in the actual flow at the same position.
+ *   a. Compare the attributes `Authenticator`, `AuthenticatorConfig`, `AuthenticatorFlow`, `Priority`, `Requiernment`, and `UserSetupAllowed` for differences.
+ *   b. If the `AuthenticationExecution` is a sub-flow, fetch the desired (from allDesiredFlows) and actual (from keycloak API) and recursively compare.
+ *
+ * "Fails fast" and returns true after the first difference is detected.
+**/
+func deepCompareAuthFlows(dflow *v1alpha1.KeycloakAPIAuthenticationFlow, aflow *v1alpha1.KeycloakAPIAuthenticationFlow, allDesiredFlows []v1alpha1.KeycloakAPIAuthenticationFlow) bool {
+	currentAliasName := dflow.Alias
+
+	// Test junk
+	dSubJson, err := json.Marshal(dflow)
+	if err != nil {
+		log.Error(err, "Error trying to marshal dflow.")
+	}
+	aSubJson, err := json.Marshal(aflow)
+	if err != nil {
+		log.Error(err, "Error trying to marshal aflow.")
+	}
+	log.Info(fmt.Sprintf("dlow \"%v/%s\".", currentAliasName, dSubJson))
+	log.Info(fmt.Sprintf("alow \"%v/%s\".", currentAliasName, aSubJson))
+	// End test junk
+	
+	log.Info(fmt.Sprintf("Desired %v Description: %v", currentAliasName, dflow.Description))
+	log.Info(fmt.Sprintf("Actual  %v Description: %v", currentAliasName, aflow.Description))
+	log.Info(fmt.Sprintf("Desired %v ProviderID: %v", currentAliasName, dflow.ProviderID))
+	log.Info(fmt.Sprintf("Actual  %v ProviderID: %v", currentAliasName, aflow.ProviderID))
+	
+	// Step 1
+	if dflow.Description != aflow.Description || dflow.ProviderID != aflow.ProviderID {
+		log.Info(fmt.Sprintf("Diff found in %v. Different Description or ProviderID.", currentAliasName))
+		return true
+	}
+	
+	// Step 2
+	if len(aflow.AuthenticationExecutions) != len(dflow.AuthenticationExecutions) {
+		log.Info(fmt.Sprintf("Diff found in %v. Different number of AuthenticationExecutions.", currentAliasName))
+		return true
+	}
+	sort.Slice(aflow.AuthenticationExecutions, func(i, j int) bool {
+		return aflow.AuthenticationExecutions[i].Priority < aflow.AuthenticationExecutions[j].Priority
+	})
+	sort.Slice(dflow.AuthenticationExecutions, func(i, j int) bool {
+		return dflow.AuthenticationExecutions[i].Priority < dflow.AuthenticationExecutions[j].Priority
+	})
+	
+	// Step 3
+	for i, dExecution := range dflow.AuthenticationExecutions {
+		aExecution := aflow.AuthenticationExecutions[i]
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" Priority: %v", currentAliasName, i, dExecution.Priority))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" Priority: %v", currentAliasName, i, aExecution.Priority))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" Authenticator: %v", currentAliasName, i, dExecution.Authenticator))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" Authenticator: %v", currentAliasName, i, aExecution.Authenticator))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" AuthenticatorConfig: %v", currentAliasName, i, dExecution.AuthenticatorConfig))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" AuthenticatorConfig: %v", currentAliasName, i, aExecution.AuthenticatorConfig))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" AuthenticatorFlow: %v", currentAliasName, i, dExecution.AuthenticatorFlow))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" AuthenticatorFlow: %v", currentAliasName, i, aExecution.AuthenticatorFlow))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" FlowAlias: %v", currentAliasName, i, dExecution.FlowAlias))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" FlowAlias: %v", currentAliasName, i, aExecution.FlowAlias))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" Requirement: %v", currentAliasName, i, dExecution.Requirement))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" Requirement: %v", currentAliasName, i, aExecution.Requirement))
+		log.Info(fmt.Sprintf("Desired \"%v/%v\" UserSetupAllowed: %v", currentAliasName, i, dExecution.UserSetupAllowed))
+		log.Info(fmt.Sprintf("Actual  \"%v/%v\" UserSetupAllowed: %v", currentAliasName, i, aExecution.UserSetupAllowed))
+		
+		// Step 3A
+		if dExecution.Priority != aExecution.Priority || dExecution.Authenticator != aExecution.Authenticator || dExecution.AuthenticatorConfig != aExecution.AuthenticatorConfig || dExecution.AuthenticatorFlow != aExecution.AuthenticatorFlow || dExecution.FlowAlias != aExecution.FlowAlias || dExecution.Requirement != aExecution.Requirement || dExecution.UserSetupAllowed != aExecution.UserSetupAllowed {
+				log.Info(fmt.Sprintf("Diff found in \"%v/%v\".", currentAliasName, i))
+				return true
+		}
+		
+		// Step 3B
+		if dExecution.AuthenticatorFlow == true {
+			subFlowAlias := dExecution.FlowAlias
+			dSubFlow := getFlowInList(subFlowAlias, allDesiredFlows)
+			aSubFlow, err := i.keycloakClient.ListAuthenticationFlow(realmName, subFlowAlias)
+			if err != nil {
+				log.Error(err, "Error trying to retrieve sub-flow.")
+			}
+			// Test junk
+			dSubFlowJson, err := json.Marshal(dSubFlow)
+			if err != nil {
+				log.Error(err, "Error trying to marshal dsubflow.")
+			}
+			aSubFlowJson, err := json.Marshal(aSubFlow)
+			if err != nil {
+				log.Error(err, "Error trying to marshal asubflow.")
+			}
+			log.Info(fmt.Sprintf("dSubFlow \"%v/%s\".", subFlowAlias, dSubFlowJson))
+			log.Info(fmt.Sprintf("aSubFlow \"%v/%s\".", subFlowAlias, aSubFlowJson))
+			// End test junk
+			childDiff := deepCompareAuthFlows(dSubFlow, aSubFlow, allDesiredFlows) //recurse
+			if childDiff {
+				log.Info(fmt.Sprintf("Diff found in \"%v/%v\".", currentAliasName, i))
+				return true
+			}
+		}
+	}
+
+	
+	return false
+}
+
+// difference returns the elements in `a` that aren't in `b`.
+func difference(a, b []string) []string {
+    mb := make(map[string]struct{}, len(b))
+    for _, x := range b {
+        mb[x] = struct{}{}
+    }
+    var diff []string
+    for _, x := range a {
+        if _, found := mb[x]; !found {
+            diff = append(diff, x)
+        }
+    }
+    return diff
+}
+
+// union returns the all elements in `a` and all the elments in `b` (no duplicates)
+func union(a, b []string) []string {
+	check := make(map[string]int)
+	d := append(a, b...)
+	union := make([]string, 0)
+	for _, val := range d {
+		check[val] = 1
+	}
+
+	for letter, _ := range check {
+		union = append(union, letter)
+	}
+
+	return union
+}
+
+// Look up auth flow in a list by it's alias
+func getFlowInList(alias string, list []v1alpha1.KeycloakAPIAuthenticationFlow) *v1alpha1.KeycloakAPIAuthenticationFlow {
+	for _, val := range list {
+		if val.Alias == alias {
+			return &val
+		}
+	}
+	return nil
+}
+// Couldn't find a way around this duplication
+func getFlowInListOfPointers(alias string, list []*v1alpha1.KeycloakAPIAuthenticationFlow) *v1alpha1.KeycloakAPIAuthenticationFlow {
+	for _, val := range list {
+		if val.Alias == alias {
+			return val
+		}
+	}
+	return nil
+}
+
+/*
+* ACTION STRUCTURES
+*/
 
 // An action to create generic kubernetes resources
 // (resources that don't require special treatment)
@@ -655,6 +916,11 @@ type DeleteClientOptionalClientScopeAction struct {
 	Ref         *v1alpha1.KeycloakClient
 	Msg         string
 	Realm       string
+}
+
+type UpdateAuthenticationFlowsAction struct {
+	Ref *v1alpha1.KeycloakRealm
+	Msg string
 }
 
 type ConfigureRealmAction struct {
@@ -808,6 +1074,10 @@ func (i PingAction) Run(runner ActionRunner) (string, error) {
 
 func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.ApplyOverrides(i.Ref)
+}
+
+func (i UpdateAuthenticationFlowsAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateAuthenticationFlows(i.Ref)
 }
 
 func (i CreateUserAction) Run(runner ActionRunner) (string, error) {

@@ -6,6 +6,8 @@ import (
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
+	
+	"github.com/go-logr/logr"
 )
 
 type Reconciler interface {
@@ -23,48 +25,66 @@ func NewKeycloakRealmReconciler(keycloak kc.Keycloak) *KeycloakRealmReconciler {
 }
 
 func (i *KeycloakRealmReconciler) Reconcile(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
+	realmLogger := log.WithValues("Request.Namespace", cr.Namespace, "Request.Name", cr.Name)
+	
 	if cr.DeletionTimestamp == nil {
-		return i.ReconcileRealmCreate(state, cr)
+		return i.ReconcileRealmCreate(state, cr, realmLogger)
 	}
 	if cr.Spec.AllowRealmDeletion {
-		log.Info("Deleting the realm. AllowRealmDeletion flag is set to true.")
-		return i.ReconcileRealmDelete(state, cr)
+		realmLogger.Info("Deleting the realm. AllowRealmDeletion flag is set to true.")
+		return i.ReconcileRealmDelete(state, cr, realmLogger)
 	}
-	log.Info("Realm is being orphaned, will not be deleted.")
+	realmLogger.Info("Realm is being orphaned, will not be deleted.")
 	return nil
 }
 
-func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
+func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState, cr *kc.KeycloakRealm, realmLogger logr.Logger) common.DesiredClusterState {
 	desired := common.DesiredClusterState{}
 
-	desired.AddAction(i.getKeycloakDesiredState())
+	desired.AddAction(i.getKeycloakDesiredState(cr))
 	desired.AddAction(i.getDesiredRealmState(state, cr))
 
 	for _, user := range cr.Spec.Realm.Users {
 		desired.AddAction(i.getDesiredUserState(state, cr, user))
 	}
 
-	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr))
+	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr, realmLogger))
+	desired.AddAction(i.getAuthenticationFlowsDesiredState(state, cr, realmLogger))
 
 	return desired
 }
 
-func (i *KeycloakRealmReconciler) ReconcileRealmDelete(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
+func (i *KeycloakRealmReconciler) ReconcileRealmDelete(state *common.RealmState, cr *kc.KeycloakRealm, realmLogger logr.Logger) common.DesiredClusterState {
 	desired := common.DesiredClusterState{}
-	desired.AddAction(i.getKeycloakDesiredState())
+	desired.AddAction(i.getKeycloakDesiredState(cr))
 	desired.AddAction(i.getDesiredRealmState(state, cr))
 	return desired
 }
 
 // Always make sure keycloak is able to respond
-func (i *KeycloakRealmReconciler) getKeycloakDesiredState() common.ClusterAction {
+func (i *KeycloakRealmReconciler) getKeycloakDesiredState(cr *kc.KeycloakRealm) common.ClusterAction {
 	return &common.PingAction{
-		Msg: "check if keycloak is available",
+		Msg: fmt.Sprintf("check if keycloak is available: %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
+	}
+}
+
+// Compare and issue necessary updates for authenticator flows
+func (i *KeycloakRealmReconciler) getAuthenticationFlowsDesiredState(state *common.RealmState, cr *kc.KeycloakRealm, realmLogger logr.Logger) common.ClusterAction {
+
+	// This step is not done when creating a new realm
+	if state.Realm == nil {
+		realmLogger.Info("Realm being created. Do not execute update auth flow logic.")
+		return nil
+	}
+	
+	return &common.UpdateAuthenticationFlowsAction {
+		Ref: cr,
+		Msg: fmt.Sprintf("configure authentication flows: %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
 	}
 }
 
 // Configure the browser redirector if provided by the user
-func (i *KeycloakRealmReconciler) getBrowserRedirectorDesiredState(state *common.RealmState, cr *kc.KeycloakRealm) common.ClusterAction {
+func (i *KeycloakRealmReconciler) getBrowserRedirectorDesiredState(state *common.RealmState, cr *kc.KeycloakRealm, realmLogger logr.Logger) common.ClusterAction {
 	if len(cr.Spec.RealmOverrides) == 0 {
 		return nil
 	}
@@ -74,9 +94,10 @@ func (i *KeycloakRealmReconciler) getBrowserRedirectorDesiredState(state *common
 		return nil
 	}
 
+	
 	return &common.ConfigureRealmAction{
 		Ref: cr,
-		Msg: "configure browser redirector",
+		Msg: fmt.Sprintf("configure browser redirector: %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
 	}
 }
 

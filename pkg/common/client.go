@@ -43,6 +43,7 @@ type T interface{}
 // Generic create function for creating new Keycloak resources
 func (c *Client) create(obj T, resourcePath, resourceName string) (string, error) {
 	jsonValue, err := json.Marshal(obj)
+	log.Info(fmt.Sprintf("POST %s Payload: %s", resourcePath, jsonValue))
 	if err != nil {
 		logrus.Errorf("error %+v marshalling object", err)
 		return "", nil
@@ -793,6 +794,43 @@ func (c *Client) ListAvailableUserRealmRoles(realmName, userID string) ([]*v1alp
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
 
+func (c *Client) GetAuthenticationFlow(alias string, realmName string) (*v1alpha1.KeycloakAPIAuthenticationFlow, error)
+	result, err := c.get(fmt.Sprintf("realms/%s/authentication/flows/%s", realmName, alias), "Authentication Flow", func(body []byte) (T, error) {
+		var authFlow *v1alpha1.KeycloakAPIAuthenticationFlow
+		err := json.Unmarshal(body, &authFlow)
+		return authFlow, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*v1alpha1.KeycloakAPIAuthenticationFlow), err
+}
+
+func (c *Client) ListAuthenticationFlows(realmName string) ([]*v1alpha1.KeycloakAPIAuthenticationFlow, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/authentication/flows", realmName), "Authentication Flows", func(body []byte) (T, error) {
+			var authenticationFlows []*v1alpha1.KeycloakAPIAuthenticationFlow
+			err := json.Unmarshal(body, &authenticationFlows)
+			return authenticationFlows, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.([]*v1alpha1.KeycloakAPIAuthenticationFlow), err
+}
+
+func (c *Client) CreateAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) (string, error) {
+	return c.create(authenticationFlow, fmt.Sprintf("realms/%s/authentication/flows", realmName), "Authentication Flow")
+}
+
+func (c *Client) UpdateAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) error {
+	return c.update(authenticationFlow, fmt.Sprintf("realms/%s/authentication/flows", realmName), "Authentication Flow")
+}
+
+func (c *Client) DeleteAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) error {
+	return c.delete(fmt.Sprintf("realms/%s/authentication/flows/%s", realmName, authenticationFlow.ID), "Authentication Flow", nil)
+}
+
+
 func (c *Client) ListAuthenticationExecutionsForFlow(flowAlias, realmName string) ([]*v1alpha1.AuthenticationExecutionInfo, error) {
 	result, err := c.list(fmt.Sprintf("realms/%s/authentication/flows/%s/executions", realmName, flowAlias), "AuthenticationExecution", func(body []byte) (T, error) {
 		var authenticationExecutions []*v1alpha1.AuthenticationExecutionInfo
@@ -987,6 +1025,11 @@ type KeycloakInterface interface {
 	ListAvailableUserRealmRoles(realmName, userID string) ([]*v1alpha1.KeycloakUserRole, error)
 	DeleteUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName, userID string) error
 
+	GetAuthenticationFlow(alias string, realmName string) (*v1alpha1.KeycloakAPIAuthenticationFlow, error)
+	ListAuthenticationFlows(realmName string) ([]*v1alpha1.KeycloakAPIAuthenticationFlow, error)
+	CreateAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) (string, error)
+	UpdateAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) error
+	DeleteAuthenticationFlow(realmName string, authenticationFlow *v1alpha1.KeycloakAPIAuthenticationFlow) error
 	ListAuthenticationExecutionsForFlow(flowAlias, realmName string) ([]*v1alpha1.AuthenticationExecutionInfo, error)
 
 	CreateAuthenticatorConfig(authenticatorConfig *v1alpha1.AuthenticatorConfig, realmName, executionID string) (string, error)
