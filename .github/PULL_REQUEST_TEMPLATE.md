@@ -8,7 +8,7 @@
 
 ## Checklist:
 - [ ] Run `make code/lint` and apply changes.
-- [ ] Run `make code/gen` and apply changes as seperate commit.
+- [ ] Run `make code/gen` and apply changes as separate commit.
 - [ ] Git and Jenkines pipelines all pass
 - [ ] Set new chart version
 - [ ] Updates to README.md (update change-log at minimum)

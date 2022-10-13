@@ -50,6 +50,7 @@ func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState,
 
 	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr, realmLogger))
 	desired.AddAction(i.getRealmRolesDesiredState(state, cr, realmLogger))
+	desired.AddAction(i.getAuthenticationFlowsDesiredState(state, cr, realmLogger))
 
 	return desired
 }
@@ -79,6 +80,20 @@ func (i *KeycloakRealmReconciler) getRealmRolesDesiredState(state *common.RealmS
 	return &common.UpdateRealmRolesAction{
 		Ref: cr,
 		Msg: fmt.Sprintf("configure realm roles: %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
+	}
+}
+
+// Compare and issue necessary updates for authenticator flows
+func (i *KeycloakRealmReconciler) getAuthenticationFlowsDesiredState(state *common.RealmState, cr *kc.KeycloakRealm, realmLogger logr.Logger) common.ClusterAction {
+	// This step is not done when creating a new realm
+	if state.Realm == nil {
+		realmLogger.Info("Realm being created. Do not execute update auth flow logic.")
+		return nil
+	}
+
+	return &common.UpdateAuthenticationFlowsAction{
+		Ref: cr,
+		Msg: fmt.Sprintf("configure authentication flows: %v/%v", cr.Namespace, cr.Spec.Realm.Realm),
 	}
 }
 
