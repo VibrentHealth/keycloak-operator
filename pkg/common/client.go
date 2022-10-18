@@ -98,6 +98,57 @@ func (c *Client) CreateClientRole(clientID string, role *v1alpha1.RoleRepresenta
 	return c.create(role, fmt.Sprintf("realms/%s/clients/%s/roles", realmName, clientID), "client role")
 }
 
+func (c *Client) ListRealmRoles(realmName string) ([]*v1alpha1.RoleRepresentation, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/roles", realmName), "Realm Roles", func(body []byte) (T, error) {
+		var realmRoles []*v1alpha1.RoleRepresentation
+
+		err := json.Unmarshal(body, &realmRoles)
+		return realmRoles, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultAsRole, ok := result.([]*v1alpha1.RoleRepresentation)
+	if !ok {
+		return nil, err
+	}
+	return resultAsRole, err
+}
+
+func (c *Client) ListRealmRoleComposites(realmName string, roleID string) ([]*v1alpha1.RoleRepresentation, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/roles-by-id/%s/composites/realm", realmName, roleID), "Realm Role Composites", func(body []byte) (T, error) {
+		var realmRoleComposites []*v1alpha1.RoleRepresentation
+
+		err := json.Unmarshal(body, &realmRoleComposites)
+		return realmRoleComposites, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultAsRoleComposites, ok := result.([]*v1alpha1.RoleRepresentation)
+	if !ok {
+		return nil, err
+	}
+	return resultAsRoleComposites, err
+}
+
+func (c *Client) CreateRealmRole(role *v1alpha1.RoleRepresentation, realmName string) error {
+	_, err := c.create(role, fmt.Sprintf("realms/%s/roles", realmName), "realm role")
+	return err
+}
+
+func (c *Client) UpdateRealmRole(role *v1alpha1.RoleRepresentation, realmName string, roleID string) error {
+	return c.update(role, fmt.Sprintf("realms/%s/roles-by-id/%s", realmName, roleID), "realm role")
+}
+
+func (c *Client) DeleteRealmRole(realmName string, roleID string) error {
+	return c.delete(fmt.Sprintf("realms/%s/roles-by-id/%s", realmName, roleID), "Realm Role", nil)
+}
+
 func (c *Client) AddRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error {
 	_, err := c.create(roles, fmt.Sprintf("realms/%s/roles-by-id/%s/composites", realmName, roleID), "realm role composites")
 	return err
@@ -934,6 +985,12 @@ type KeycloakInterface interface {
 	ListRealmRoleClientRoleComposites(realmName, roleID, clientID string) ([]v1alpha1.RoleRepresentation, error)
 	AddRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error
 	DeleteRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error
+	ListRealmRoleComposites(realmName string, roleID string) ([]*v1alpha1.RoleRepresentation, error)
+
+	CreateRealmRole(role *v1alpha1.RoleRepresentation, realmName string) error
+	UpdateRealmRole(role *v1alpha1.RoleRepresentation, realmName string, roleID string) error
+	DeleteRealmRole(realmName string, roleID string) error
+	ListRealmRoles(realmName string) ([]*v1alpha1.RoleRepresentation, error)
 
 	CreateClient(client *v1alpha1.KeycloakAPIClient, realmName string) (string, error)
 	GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPIClient, error)
