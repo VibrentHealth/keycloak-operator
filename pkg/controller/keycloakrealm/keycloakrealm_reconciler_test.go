@@ -219,7 +219,8 @@ func TestKeycloakRealmReconciler_Update(t *testing.T) {
 	// 1 - update realm
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.UpdateRealmAction{}, desiredState[1])
-	assert.Len(t, desiredState, 2)
+	assert.IsType(t, &common.UpdateRealmRolesAction{}, desiredState[2])
+	assert.Len(t, desiredState, 3)
 	assert.Equal(t, "updated", desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.DisplayName)
 	assert.False(t, *desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.EventsEnabled)
 	assert.False(t, *desiredState[1].(*common.UpdateRealmAction).Ref.Spec.Realm.AdminEventsEnabled)
