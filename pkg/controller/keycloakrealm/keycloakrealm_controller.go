@@ -270,7 +270,7 @@ func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, realmLogge
 	realm.Status.Ready = false
 	realm.Status.Phase = v1alpha1.PhaseFailing
 
-	realmLogger.Info("Pushing unsuccessful reconcile to CR. Will be requeued in 1 minute. Id: %s, Message: %s", realm.Spec.Realm.ID, realm.Status.Message)
+	realmLogger.Info(fmt.Sprintf("Pushing unsuccessful reconcile to CR. Will be requeued in 1 minute. Id: %s, Message: %s", realm.Spec.Realm.ID, realm.Status.Message))
 	err := r.client.Status().Update(r.context, realm)
 	if err != nil {
 		realmLogger.Error(err, "unable to update status")
