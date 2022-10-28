@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -19,6 +18,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/go-logr/logr"
 )
 
 var log = logf.Log.WithName("action_runner")
@@ -480,173 +481,196 @@ func (i *ClusterActionRunner) UpdateRealmRoles(obj *v1alpha1.KeycloakRealm) erro
 }
 
 /*
-* Configure Realm Roles. Includes configuring composites under roles.realm.composites.
-* Does not include roles.client.additionalProperties configuration.
+* PRIVATE BUSINESS FUNCTIONS
  */
 
+/**
+ * Vibrent logic to compare and issue updates to Realm Roles
+ *
+ * Supported Changes:
+ *   * Creation of new realm roles (cannot have reserved name)
+ *   * Deletion of exsting realm roles (cannot delete reserved roles)
+ *   * Adding or removing composites to a new or existing realm role
+ *
+ * Unsupported:
+ *   * Any management of the reserved roles, which are auto-generated: `offline_access`, `uma_authorization`, and the default role, named `default-roles-<realmname>`
+ *     * Adding/removing composites to the default role IS supported, through `spec.realm.defaultRoles` instead of here.
+ *     * You can also add/ reserved roles as composites to other roles.
+ *   * Configuration of client roles or the roles.client.additionalProperties attribute.
+**/
 func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) error {
 	realmName := obj.Spec.Realm.Realm
+	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
 
-	// get top level actual roles
-	topLevelActualRoles, err := i.keycloakClient.ListRealmRoles(realmName)
+	ignoredRolesList := []string{"offline_access", "uma_authorization", "default-roles-" + strings.ToLower(realmName)}
+
+	// Fetch realm roles from Keycloak API
+	actualRealmRoles, err := i.keycloakClient.ListRealmRoles(realmName)
 	if err != nil {
 		return err
 	}
 
-	// get IDs and match them with role names
-	topLevelNamesIDs := make(map[string]string)
-	for _, topLevelRole := range topLevelActualRoles {
-		topLevelNamesIDs[topLevelRole.Name] = topLevelRole.ID
-	}
+	// Return a map of role names to RoleRepresentation objects, and the key set as a list.
+	actualRealmRoleNames, actualRealmRoleMap := prepareActualRealmRoles(actualRealmRoles, ignoredRolesList)
+	desiredRealmRoleNames, desiredRealmRoleMap := prepareDesiredRealmRoles(obj, ignoredRolesList)
 
-	rolesToRemove := difference(getActualRoleNames(topLevelActualRoles), getDesiredRoleNames(getAllDesiredRealmRoles(obj)))
-	rolesToAdd := difference(getDesiredRoleNames(getAllDesiredRealmRoles(obj)), getActualRoleNames(topLevelActualRoles))
-	rolesToCompare := difference(union(getActualRoleNames(topLevelActualRoles), getDesiredRoleNames(getAllDesiredRealmRoles(obj))), append(rolesToAdd, rolesToRemove...))
+	rolesToRemove := difference(actualRealmRoleNames, desiredRealmRoleNames)
+	rolesToAdd := difference(desiredRealmRoleNames, actualRealmRoleNames)
+	rolesToCompare := difference(union(actualRealmRoleNames, desiredRealmRoleNames), append(rolesToAdd, rolesToRemove...))
 
-	// UPDATE REALM ROLES LOGIC
-	err2 := i.realmRolesUpdate(obj, rolesToCompare, topLevelActualRoles, topLevelNamesIDs)
-	if err2 != nil {
-		return err2
-	}
+	actionLogger.Info(fmt.Sprintf("[REALM ROLE] Adding: %v, Comparing: %v, Removing: %v", rolesToAdd, rolesToCompare, rolesToRemove))
 
-	// REMOVE REALM ROLES LOGIC
-	err3 := i.realmRolesRemove(obj, rolesToRemove, topLevelNamesIDs)
-	if err3 != nil {
-		return err3
-	}
-
-	// REMOVE REALM ROLES LOGIC
-	err4 := i.realmRolesAdd(obj, rolesToAdd)
-	if err4 != nil {
-		return err4
-	}
-
-	return nil
-}
-
-// UPDATE REALM ROLES LOGIC
-func (i *ClusterActionRunner) realmRolesUpdate(obj *v1alpha1.KeycloakRealm, rolesToCompare []string, topLevelActualRoles []*v1alpha1.RoleRepresentation, topLevelNamesIDs map[string]string) error {
-	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name)
-	realmName := obj.Spec.Realm.Realm
-	for _, name := range rolesToCompare {
-		actionLogger.Info(fmt.Sprintf("Compare: %s", name))
-		arole := getRoleInListOfPointers(name, topLevelActualRoles)
-		drole := getRealmRoleInList(name, getAllDesiredRealmRoles(obj))
-		if !genericEqualsRealmRoles(drole, arole) {
-			actionLogger.Info(fmt.Sprintf("Updating Realm Role: %s", name))
-			err := i.keycloakClient.UpdateRealmRole(drole, realmName, arole.ID)
-			if err != nil {
-				actionLogger.Info(fmt.Sprintf("Error: Unable to update realm role: %s", name))
-				return err
-			}
-		}
-
-		aroleComposites, err := i.keycloakClient.ListRealmRoleComposites(realmName, arole.ID)
-		if err != nil {
-			return err
-		}
-		aroleCompositesLength := len(aroleComposites)
-		droleCompositesLength := getdroleCompositesLength(drole)
-
-		actionLogger.Info(fmt.Sprintf("Checking Composites for Realm Role: %s", name))
-		// add realm role composites
-		if droleCompositesLength > aroleCompositesLength {
-			actionLogger.Info(fmt.Sprintf("Adding role Composites to Realm Role: %s", name))
-			err := i.keycloakClient.AddRealmRoleComposites(realmName, arole.ID, getDesiredRoleCompositesToAdd(topLevelNamesIDs, drole.Composites.Realm))
-			if err != nil {
-				actionLogger.Info(fmt.Sprintf("Error: Unable to add composites for realm role: %s", name))
-				return err
-			}
-		}
-		// remove realm role composites
-		if droleCompositesLength < aroleCompositesLength {
-			actionLogger.Info(fmt.Sprintf("Removing role Composites from Realm Role: %s", name))
-			err := i.keycloakClient.DeleteRealmRoleComposites(realmName, arole.ID, getDesiredRoleCompositesToRemove(aroleComposites, drole))
-			if err != nil {
-				actionLogger.Info(fmt.Sprintf("Error: Unable to remove composites for realm role: %s", name))
-				return err
-			}
-		}
-		// update realm role composites
-		if droleCompositesLength == aroleCompositesLength && aroleCompositesLength != 0 {
-			err := i.updateEqualLengthRoleComposites(obj, aroleComposites, arole, drole, topLevelNamesIDs, name)
-			if err != nil {
-				actionLogger.Info(fmt.Sprintf("Error: Unable to remove composites for realm role: %s", name))
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// get desired role composites length
-func getdroleCompositesLength(drole *v1alpha1.RoleRepresentation) int {
-	droleCompositesLength := 0
-	if drole.Composites != nil {
-		if drole.Composites.Realm != nil {
-			droleCompositesLength = len(drole.Composites.Realm)
-		}
-	}
-	return droleCompositesLength
-}
-
-// update logic for equal amount of composites in actual and desired roles
-func (i *ClusterActionRunner) updateEqualLengthRoleComposites(obj *v1alpha1.KeycloakRealm, aroleComposites []*v1alpha1.RoleRepresentation, arole *v1alpha1.RoleRepresentation, drole *v1alpha1.RoleRepresentation, topLevelNamesIDs map[string]string, name string) error {
-	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name)
-	realmName := obj.Spec.Realm.Realm
-	aroleCompositeNames := []string{}
-	for _, aroleComposite := range aroleComposites {
-		aroleCompositeNames = append(aroleCompositeNames, aroleComposite.Name)
-	}
-	droleCompositeNames := drole.Composites.Realm
-	sort.Strings(aroleCompositeNames)
-	sort.Strings(droleCompositeNames)
-	if !reflect.DeepEqual(aroleCompositeNames, droleCompositeNames) {
-		actionLogger.Info(fmt.Sprintf("Updating role Composites in Realm Role: %s", name))
-		roleCompositesToAdd, roleCompositesToRemove := getRoleCompositesToUpdate(aroleComposites, drole.Composites.Realm, topLevelNamesIDs)
-		err := i.keycloakClient.DeleteRealmRoleComposites(realmName, arole.ID, roleCompositesToRemove)
-		if err != nil {
-			actionLogger.Info(fmt.Sprintf("Error: Unable to remove composites for realm role: %s", name))
-			return err
-		}
-		err2 := i.keycloakClient.AddRealmRoleComposites(realmName, arole.ID, roleCompositesToAdd)
-		if err2 != nil {
-			actionLogger.Info(fmt.Sprintf("Error: Unable to add composites for realm role: %s", name))
-			return err2
-		}
-	}
-	return nil
-}
-
-// REMOVE REALM ROLES LOGIC
-func (i *ClusterActionRunner) realmRolesRemove(obj *v1alpha1.KeycloakRealm, rolesToRemove []string, topLevelNamesIDs map[string]string) error {
-	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name)
-	realmName := obj.Spec.Realm.Realm
-	for _, name := range rolesToRemove {
-		roleID := topLevelNamesIDs[name]
-		rolesToIgnore := []string{"default-roles-" + realmName}
-		if !contains(rolesToIgnore, name) {
-			actionLogger.Info(fmt.Sprintf("Removing Realm Role: %s", name))
-			err := i.keycloakClient.DeleteRealmRole(realmName, roleID)
-			if err != nil {
-				actionLogger.Info(fmt.Sprintf("Unable to delete realm role. ID: %s, Name: %s", roleID, name))
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// REMOVE REALM ROLES LOGIC
-func (i *ClusterActionRunner) realmRolesAdd(obj *v1alpha1.KeycloakRealm, rolesToAdd []string) error {
-	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name)
-	realmName := obj.Spec.Realm.Realm
+	// Do additions
 	for _, name := range rolesToAdd {
-		actionLogger.Info(fmt.Sprintf("Adding Realm Role: %s", name))
-		role := getRealmRoleInList(name, getAllDesiredRealmRoles(obj))
-		err := i.keycloakClient.CreateRealmRole(role, realmName)
+		actionLogger.Info(fmt.Sprintf("[REALM ROLE CREATION] Creating new realm role %v", name))
+		err = i.keycloakClient.CreateRealmRole(desiredRealmRoleMap[name], realmName)
 		if err != nil {
-			actionLogger.Info(fmt.Sprintf("Error: Unable to create realm role: %s", name))
+			roleJSON, jsonerr := json.Marshal(desiredRealmRoleMap[name])
+			if jsonerr != nil {
+				actionLogger.Info(fmt.Sprintf("[REALM ROLE CREATION - ERROR] Creating new realm role %v, and unable to marshal JSON.", name))
+				return err
+			}
+			actionLogger.Info(fmt.Sprintf("[REALM ROLE CREATION - ERROR] Creating new realm role %v", roleJSON))
+			return err
+		}
+	}
+
+	// If additions were made, rebuild the actual realm list. In case new roles are used in composites.
+	if len(rolesToAdd) > 0 {
+		actionLogger.Info("Roles were added, rebuild role list.")
+		actualRealmRoles, err = i.keycloakClient.ListRealmRoles(realmName)
+		if err != nil {
+			return err
+		}
+		_, actualRealmRoleMap = prepareActualRealmRoles(actualRealmRoles, ignoredRolesList)
+	}
+
+	// Do comparisons
+	for _, name := range rolesToCompare {
+		err = i.compareAndUpdateRealmRole(realmName, desiredRealmRoleMap[name], actualRealmRoleMap[name], actualRealmRoleMap, actionLogger)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Do deletions
+	for _, name := range rolesToRemove {
+		actionLogger.Info(fmt.Sprintf("[REALM ROLE DELETION] Deleting realm role %v. Will be unassigned from all users.", name))
+		err = i.keycloakClient.DeleteRealmRole(realmName, actualRealmRoleMap[name].ID)
+		if err != nil {
+			actionLogger.Info(fmt.Sprintf("[REALM ROLE DELETION - ERROR] Unable to delete existing realm role %v.", name))
+			return err
+		}
+	}
+
+	return nil
+}
+
+/**
+ * Compare a realm role's desired and actual state and issue updates if necessary.
+ *
+ * ARGS
+ * * realmName string, used by keycloakClient for http requests
+ * * dRole RoleRepresentation: The desired state for comparison, parsed from the CR definition
+ * * aRole RoleRepresentation: The actual state for comparison, queried from the Keycloak API
+ * * allActualRolesMap map[string]*v1alpha1.RoleRepresentation: Map contains all current roles queried from the Keycloak API, including roles just created in this reconciliation. Keys are role name OR role ID.
+ * * actionLogger logr: Used for logging.
+ *
+ * DESCRIPTION
+ * 1. First, compare the role's `Description` and `Attributes`. If there is a difference, issue an UPDATE ROLE request.
+ * 2. If the `Composite` attribute is `true` for the actual OR desired state, then also resolve differences in composites list.
+ *   a. Fetch the current list of composites for the actual role from the Keycloak API, and compare it to the desired list from the CR.
+ *   b. If necessary, add new composites (in single Keycloak API request)
+ *   c. If necessary, remove existing composites (in single Keycloak API request)
+ *
+ * "Fails fast" and prints error if any Keycloak API request fails.
+**/
+func (i *ClusterActionRunner) compareAndUpdateRealmRole(realmName string, dRole *v1alpha1.RoleRepresentation, aRole *v1alpha1.RoleRepresentation, allActualRolesMap map[string]*v1alpha1.RoleRepresentation, actionLogger logr.Logger) error {
+	roleLogger := actionLogger.WithValues("Realm.Role", dRole.Name)
+
+	//	// Basic Debugging Statement
+	//	desiredRoleJson, jsonerr := json.Marshal(*dRole)
+	//	if jsonerr != nil {
+	//		roleLogger.Info("Can't marshal desiredRoleJson")
+	//		return jsonerr
+	//	}
+	//	actualRoleJson, jsonerr := json.Marshal(*aRole)
+	//	if jsonerr != nil {
+	//		roleLogger.Info("Can't marshal actualRoleJson")
+	//		return jsonerr
+	//	}
+	//	roleLogger.Info(fmt.Sprintf("Comparing Actual: %s to Desired: %s", actualRoleJson, desiredRoleJson))
+	//	// End debugging block
+
+	// Step 1
+	if !genericEqualsRealmRoles(dRole, aRole) {
+		roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE] Update generic values of realm role %v.", aRole.Name))
+		err := i.keycloakClient.UpdateRealmRole(dRole, realmName, aRole.ID)
+		if err != nil {
+			roleJSON, jsonerr := json.Marshal(*dRole)
+			if jsonerr != nil {
+				roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm role %v, and unable to marshal JSON.", aRole.Name))
+				return err
+			}
+			roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm role %s", roleJSON))
+			return err
+		}
+	}
+
+	// Step 2 - First check if needed.
+	if !*aRole.Composite && !*dRole.Composite {
+		return nil
+	}
+
+	// Step 2A
+	aRoleComposites, err := i.keycloakClient.ListRealmRoleComposites(realmName, aRole.ID)
+	if err != nil {
+		return err
+	}
+
+	aRoleCompositeNames := []string{}
+	for _, r := range aRoleComposites {
+		aRoleCompositeNames = append(aRoleCompositeNames, r.Name)
+	}
+	dRoleCompositeNames := safelyGetCompositeNames(dRole)
+
+	compositesToRemove := difference(aRoleCompositeNames, dRoleCompositeNames)
+	compositesToAdd := difference(dRoleCompositeNames, aRoleCompositeNames)
+
+	// Step 2B - Add realm role composites
+	if len(compositesToAdd) > 0 {
+		addList := []v1alpha1.RoleRepresentation{}
+		for _, name := range compositesToAdd {
+			addList = append(addList, *allActualRolesMap[name])
+		}
+		roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE] Adding new composite roles %v.", compositesToAdd))
+		err = i.keycloakClient.AddRealmRoleComposites(realmName, aRole.ID, &addList)
+		if err != nil {
+			rolesJSON, jsonerr := json.Marshal(addList)
+			if jsonerr != nil {
+				roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE - ERROR] Unable to add new composite roles %v, and unable to marshal JSON.", compositesToAdd))
+				return err
+			}
+			roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE - ERROR] Unable to add new composite roles %v", rolesJSON))
+			return err
+		}
+	}
+
+	// Step 2C - Remove realm role composites
+	if len(compositesToRemove) > 0 {
+		removeList := []v1alpha1.RoleRepresentation{}
+		for _, name := range compositesToRemove {
+			removeList = append(removeList, *allActualRolesMap[name])
+		}
+		roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE] Removing existing composite roles %v.", compositesToRemove))
+		err = i.keycloakClient.DeleteRealmRoleComposites(realmName, aRole.ID, &removeList)
+		if err != nil {
+			drolesJSON, jsonerr := json.Marshal(removeList)
+			if jsonerr != nil {
+				roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE - ERROR] Unable to remove existing composite roles %v, and unable to marshal JSON.", compositesToRemove))
+				return err
+			}
+			roleLogger.Info(fmt.Sprintf("[REALM ROLE COMPOSITE CHANGE - ERROR] Unable to remove existing composite roles %v", drolesJSON))
 			return err
 		}
 	}
@@ -658,95 +682,50 @@ func genericEqualsRealmRoles(drole *v1alpha1.RoleRepresentation, arole *v1alpha1
 	return arole.Description == drole.Description && arole.Name == drole.Name && reflect.DeepEqual(arole.Attributes, drole.Attributes)
 }
 
-// Get all desired realm roles from the CR
-func getAllDesiredRealmRoles(obj *v1alpha1.KeycloakRealm) []v1alpha1.RoleRepresentation {
-	desiredRealmRoles := []v1alpha1.RoleRepresentation{}
-	if obj.Spec.Realm.Roles != nil {
-		if obj.Spec.Realm.Roles.Realm != nil {
-			desiredRealmRoles = obj.Spec.Realm.Roles.Realm
+// If any nested portion is nil, an empty list is returned.
+func safelyGetCompositeNames(drole *v1alpha1.RoleRepresentation) []string {
+	names := []string{}
+	if drole.Composites != nil {
+		if drole.Composites.Realm != nil {
+			names = drole.Composites.Realm
 		}
 	}
-	return desiredRealmRoles
+	return names
 }
 
-// Get actual role names based on actual realm roles
-func getActualRoleNames(topLevelActualRoles []*v1alpha1.RoleRepresentation) []string {
+// Create Map that maps name OR id to the RoleRepresentation, and return a list of the role names.
+func prepareActualRealmRoles(actualRealmRoles []*v1alpha1.RoleRepresentation, ignoredRolesList []string) ([]string, map[string]*v1alpha1.RoleRepresentation) {
+	actualRoleMap := make(map[string]*v1alpha1.RoleRepresentation)
 	actualRoleNames := []string{}
-	for _, arole := range topLevelActualRoles {
-		actualRoleNames = append(actualRoleNames, arole.Name)
+	for _, arole := range actualRealmRoles {
+		actualRoleMap[arole.Name] = arole
+		actualRoleMap[arole.ID] = arole
+		if !contains(ignoredRolesList, arole.Name) {
+			actualRoleNames = append(actualRoleNames, arole.Name)
+		}
 	}
-	return actualRoleNames
+	return actualRoleNames, actualRoleMap
 }
 
-// Get desired role names based on desired roles
-func getDesiredRoleNames(desiredRoles []v1alpha1.RoleRepresentation) []string {
+// Create Map from role name to role, and return a list of the role names.
+func prepareDesiredRealmRoles(obj *v1alpha1.KeycloakRealm, ignoredRolesList []string) ([]string, map[string]*v1alpha1.RoleRepresentation) {
+	desiredRoleMap := make(map[string]*v1alpha1.RoleRepresentation)
 	desiredRoleNames := []string{}
-	for _, drole := range desiredRoles {
-		desiredRoleNames = append(desiredRoleNames, drole.Name)
-	}
-	return desiredRoleNames
-}
 
-// Get desired role composite roles that need to be added
-func getDesiredRoleCompositesToAdd(topLevelNamesIDs map[string]string, desiredRoleCompositeNames []string) *[]v1alpha1.RoleRepresentation {
-	desiredRoleComposites := []v1alpha1.RoleRepresentation{}
-	for _, desiredRoleCompositeName := range desiredRoleCompositeNames {
-		desiredRoleComposite := v1alpha1.RoleRepresentation{}
-		desiredRoleComposite.Name = desiredRoleCompositeName
-		desiredRoleComposite.ID = topLevelNamesIDs[desiredRoleCompositeName]
-		desiredRoleComposites = append(desiredRoleComposites, desiredRoleComposite)
-	}
-	return &desiredRoleComposites
-}
-
-// Get desired role composite roles that need to be removed
-func getDesiredRoleCompositesToRemove(aroleComposites []*v1alpha1.RoleRepresentation, drole *v1alpha1.RoleRepresentation) *[]v1alpha1.RoleRepresentation {
-	desiredRoleComposites := []v1alpha1.RoleRepresentation{}
-
-	if drole.Composites == nil {
-		for _, actualRoleCompositeName := range aroleComposites {
-			desiredRoleComposite := v1alpha1.RoleRepresentation{}
-			desiredRoleComposite.Name = actualRoleCompositeName.Name
-			desiredRoleComposite.ID = actualRoleCompositeName.ID
-			desiredRoleComposites = append(desiredRoleComposites, desiredRoleComposite)
-		}
-		return &desiredRoleComposites
+	// Safety check to avoid panic
+	if obj.Spec.Realm.Roles == nil || obj.Spec.Realm.Roles.Realm == nil {
+		return desiredRoleNames, desiredRoleMap // return empty structures
 	}
 
-	for _, actualRoleCompositeName := range aroleComposites {
-		if !contains(drole.Composites.Realm, actualRoleCompositeName.Name) {
-			desiredRoleComposite := v1alpha1.RoleRepresentation{}
-			desiredRoleComposite.Name = actualRoleCompositeName.Name
-			desiredRoleComposite.ID = actualRoleCompositeName.ID
-			desiredRoleComposites = append(desiredRoleComposites, desiredRoleComposite)
+	desiredRealmRoles := obj.Spec.Realm.Roles.Realm
+	for _, drole := range desiredRealmRoles {
+		droleCopy := drole // IMPORTANT! See: https://stackoverflow.com/a/48826629
+		desiredRoleMap[droleCopy.Name] = &droleCopy
+		if !contains(ignoredRolesList, droleCopy.Name) {
+			desiredRoleNames = append(desiredRoleNames, droleCopy.Name)
 		}
 	}
-	return &desiredRoleComposites
-}
-
-// Get composite roles that need to be updated. Added and removed.
-func getRoleCompositesToUpdate(aroleComposites []*v1alpha1.RoleRepresentation, desiredRoleCompositeNames []string, topLevelNamesIDs map[string]string) (*[]v1alpha1.RoleRepresentation, *[]v1alpha1.RoleRepresentation) {
-	desiredRoleCompositesToAdd := []v1alpha1.RoleRepresentation{}
-	desiredRoleCompositesToRemove := []v1alpha1.RoleRepresentation{}
-	aroleCompositeNames := []string{}
-	for _, aroleComposite := range aroleComposites {
-		aroleCompositeNames = append(aroleCompositeNames, aroleComposite.Name)
-		if !contains(desiredRoleCompositeNames, aroleComposite.Name) {
-			desiredRoleCompositeToRemove := v1alpha1.RoleRepresentation{}
-			desiredRoleCompositeToRemove.Name = aroleComposite.Name
-			desiredRoleCompositeToRemove.ID = aroleComposite.ID
-			desiredRoleCompositesToRemove = append(desiredRoleCompositesToRemove, desiredRoleCompositeToRemove)
-		}
-	}
-	for _, droleCompositeName := range desiredRoleCompositeNames {
-		if !contains(aroleCompositeNames, droleCompositeName) {
-			desiredRoleCompositeToAdd := v1alpha1.RoleRepresentation{}
-			desiredRoleCompositeToAdd.Name = droleCompositeName
-			desiredRoleCompositeToAdd.ID = topLevelNamesIDs[droleCompositeName]
-			desiredRoleCompositesToAdd = append(desiredRoleCompositesToAdd, desiredRoleCompositeToAdd)
-		}
-	}
-	return &desiredRoleCompositesToAdd, &desiredRoleCompositesToRemove
+	return desiredRoleNames, desiredRoleMap
 }
 
 func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, obj *v1alpha1.KeycloakRealm) error {
@@ -806,7 +785,7 @@ func difference(a, b []string) []string {
 	return diff
 }
 
-// contains function
+// contains returns true iff `str` is one of the values in `s`
 func contains(s []string, str string) bool {
 	for _, v := range s {
 		if v == str {
@@ -830,26 +809,6 @@ func union(a, b []string) []string {
 	}
 
 	return union
-}
-
-// Look up realm role in a list by it's name
-func getRealmRoleInList(name string, list []v1alpha1.RoleRepresentation) *v1alpha1.RoleRepresentation {
-	for _, val := range list {
-		if val.Name == name {
-			return &val
-		}
-	}
-	return nil
-}
-
-// Look up realm role in a list by it's name
-func getRoleInListOfPointers(name string, list []*v1alpha1.RoleRepresentation) *v1alpha1.RoleRepresentation {
-	for _, val := range list {
-		if val.Name == name {
-			return val
-		}
-	}
-	return nil
 }
 
 // An action to create generic kubernetes resources
