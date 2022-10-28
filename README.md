@@ -24,6 +24,7 @@ Vibrent forked the Keycloak Operator to make the following custom changes. Broke
 #### 1.7.X
 * Update realm CRD with realm settings fields. Fields values are default, not set to anything: [AC-124726](https://vibrenthealth.atlassian.net/browse/AC-124726)
 * Chart and init configuration to control operator SYNC_PERIOD, and concurrency for realm and client loops.
+* New logic for updating "realm roles" in the KeycloakRealm reconcile logic.
 
 ### Updating Custom Resource Definitions (CRD)
 Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
