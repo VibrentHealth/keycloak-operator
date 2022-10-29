@@ -617,8 +617,8 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRole(realmName string, dRole 
 		}
 	}
 
-	// Step 2 - First check if needed.
-	if !*aRole.Composite && !*dRole.Composite {
+	// Step 2 - First check if needed. Logic: https://go.dev/play/p/gDvSJ-lzqws
+	if (aRole.Composite == nil || !*aRole.Composite) && (dRole.Composite == nil || !*dRole.Composite) {
 		return nil
 	}
 
