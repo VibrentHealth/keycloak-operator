@@ -45,8 +45,11 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"unmanagedKeycloakRealmTest": {
 				testFunction: keycloakUnmanagedRealmTest,
 			},
-			"allowRealmDeletionKeycloakRealmTest": {
-				testFunction: keycloakAllowRealmDeletionRealmTest,
+			"keycloakAllowRealmDeletionTrueTest": {
+				testFunction: keycloakAllowRealmDeletionTrueTest,
+			},
+			"keycloakAllowRealmDeletionFalseTest": {
+				testFunction: keycloakAllowRealmDeletionFalseTest,
 			},
 		},
 	}
@@ -537,20 +540,75 @@ func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *te
 	return err
 }
 
-func keycloakAllowRealmDeletionRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+func keycloakAllowRealmDeletionTrueTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// default RealmCR created has AllowRealmDeletion: true
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
 
+	// Create realm
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {
 		return err
 	}
 
+	// Wait for CR to be successfully reconciled.
 	err = WaitForRealmToBeReady(t, framework, namespace)
 	if err != nil {
 		return err
 	}
 
-	return err
+	// Delete Realm
+	err = Delete(framework, keycloakRealmCR)
+	if err != nil {
+		return err
+	}
+
+	// Wait for Realm CR to be gone.
+	err = WaitForRealmToBeDeleted(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// Verify Realm is deleted.
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	keycloakURL := keycloakCR.Status.ExternalURL
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+	return WaitForStatusCodeResponse(t, framework, keycloakURL+"/auth/realms/"+realmName+"/.well-known/openid-configuration", 404)
+}
+
+func keycloakAllowRealmDeletionFalseTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// default RealmCR created has AllowRealmDeletion: true
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+	keycloakRealmCR.Spec.AllowRealmDeletion = false
+
+	// Create realm
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	// Wait for CR to be successfully reconciled.
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// Delete Realm
+	err = Delete(framework, keycloakRealmCR)
+	if err != nil {
+		return err
+	}
+
+	// Wait for Realm CR to be gone.
+	err = WaitForRealmToBeDeleted(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// Verify Realm still present.
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	keycloakURL := keycloakCR.Status.ExternalURL
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+	return WaitForSuccessResponse(t, framework, keycloakURL+"/auth/realms/"+realmName+"/.well-known/openid-configuration")
 }
 
 func keycloakRealmWithEventsTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
