@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -149,6 +150,25 @@ func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespa
 	})
 }
 
+func WaitForRealmToBeDeleted(t *testing.T, framework *framework.Framework, namespace string) error {
+	keycloakRealmCR := &keycloakv1alpha1.KeycloakRealm{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, testKeycloakRealmCRName, keycloakRealmCR)
+		if err != nil {
+			if apiErrors.IsNotFound(err) {
+				return nil // deleted
+			}
+			return err
+		}
+		keycloakRealmCRParsed, err := json.Marshal(keycloakRealmCR)
+		if err != nil {
+			return err
+		}
+		return errors.Errorf("keycloakRealm is not deleted \nCurrent CR value : %s", string(keycloakRealmCRParsed))
+	})
+}
+
 func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namespace string, name string) error {
 	keycloakClientCR := &keycloakv1alpha1.KeycloakClient{}
 
@@ -254,6 +274,15 @@ func WaitForSuccessResponse(t *testing.T, framework *framework.Framework, url st
 	return WaitForResponse(t, framework, url, func(response *http.Response) error {
 		if response.StatusCode != 200 {
 			return errors.Errorf("invalid response from url %s (%v)", url, response.Status)
+		}
+		return nil
+	})
+}
+
+func WaitForStatusCodeResponse(t *testing.T, framework *framework.Framework, url string, statusCode int) error {
+	return WaitForResponse(t, framework, url, func(response *http.Response) error {
+		if response.StatusCode != statusCode {
+			return errors.Errorf("invalid response from url %s (%v). Expected (%v)", url, response.Status, statusCode)
 		}
 		return nil
 	})
