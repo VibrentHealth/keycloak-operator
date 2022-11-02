@@ -128,6 +128,25 @@ func WaitForKeycloakToBeReady(t *testing.T, framework *framework.Framework, name
 	})
 }
 
+func WaitForKeycloakToBeDeleted(t *testing.T, framework *framework.Framework, namespace string, name string) error {
+	keycloakCR := &keycloakv1alpha1.Keycloak{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, name, keycloakCR)
+		if err != nil {
+			if apiErrors.IsNotFound(err) {
+				return nil // deleted
+			}
+			return err
+		}
+		keycloakCRParsed, err := json.Marshal(keycloakCR)
+		if err != nil {
+			return err
+		}
+		return errors.Errorf("keycloak is not deleted \nCurrent CR value : %s", string(keycloakCRParsed))
+	})
+}
+
 func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
 	keycloakRealmCR := &keycloakv1alpha1.KeycloakRealm{}
 

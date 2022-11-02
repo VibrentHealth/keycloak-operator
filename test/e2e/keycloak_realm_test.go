@@ -15,6 +15,7 @@ const (
 	testOperatorIDPDisplayName = "Test Operator IDP"
 )
 
+// Tests that will all run on the same Keycloak Instance, parpared in the `prepareEnvironmentSteps` of the Struct
 func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
@@ -50,6 +51,18 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			},
 			"keycloakAllowRealmDeletionFalseTest": {
 				testFunction: keycloakAllowRealmDeletionFalseTest,
+			},
+		},
+	}
+}
+
+// This test step in this Struct cannot run in parallel or share a Keycloak resource with the other tests above.
+func NewKeycloakRealmsDeletionTestStruct() *CRDTestStruct {
+	return &CRDTestStruct{
+		prepareEnvironmentSteps: []environmentInitializationStep{prepareKeycloaksCR},
+		testSteps: map[string]deployedOperatorTestStep{
+			"keycloakRealmDeletedAfterKCInstanceRemoved": {
+				testFunction: keycloakRealmDeletedAfterKCInstanceRemoved,
 			},
 		},
 	}
@@ -609,6 +622,38 @@ func keycloakAllowRealmDeletionFalseTest(t *testing.T, framework *test.Framework
 	keycloakURL := keycloakCR.Status.ExternalURL
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
 	return WaitForSuccessResponse(t, framework, keycloakURL+"/auth/realms/"+realmName+"/.well-known/openid-configuration")
+}
+
+// This test step is part of a different test Struct, defined at the top of the file, because it needs to install then delete it's own Keycloak instance.
+func keycloakRealmDeletedAfterKCInstanceRemoved(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// Install the default test realm and wait for it to be reconciled
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// Fetch reference to Keycloak CR installed in setup step, issue kctl delete and wait for Deletion.
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	err = Delete(framework, &keycloakCR)
+	if err != nil {
+		return err
+	}
+	err = WaitForKeycloakToBeDeleted(t, framework, namespace, testKeycloakCRName)
+	if err != nil {
+		return err
+	}
+
+	// After Keycloak is gone, then issue Delete for KeycloakRealm and verify the CR is deleted.
+	err = Delete(framework, keycloakRealmCR)
+	if err != nil {
+		return err
+	}
+	return WaitForRealmToBeDeleted(t, framework, namespace)
 }
 
 func keycloakRealmWithEventsTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
