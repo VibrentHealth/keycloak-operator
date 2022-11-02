@@ -161,7 +161,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{
 			RequeueAfter: RequeueDelayError,
 			Requeue:      true,
-		}, nil
+		}, r.manageSuccess(instance, realmLogger, instance.DeletionTimestamp != nil)
 	}
 
 	// The realm may be applicable to multiple keycloak instances,
