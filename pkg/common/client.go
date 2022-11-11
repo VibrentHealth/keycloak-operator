@@ -790,7 +790,7 @@ func (c *Client) DeleteRealmClientScope(realmName string, clientScopeID string) 
 }
 
 func (c *Client) ListRealmClientScopes(realmName string) ([]*v1alpha1.KeycloakClientScope, error) {
-  result, err := c.list(fmt.Sprintf("realms/%s/client-scopes", realmName), "Realm Client Scopes", func(body []byte) (T, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/client-scopes", realmName), "Realm Client Scopes", func(body []byte) (T, error) {
 		var clientScopes []*v1alpha1.KeycloakClientScope
 		err := json.Unmarshal(body, &clientScopes)
 		return clientScopes, err
@@ -1098,9 +1098,9 @@ type KeycloakInterface interface {
 	ListRealmRoles(realmName string) ([]*v1alpha1.RoleRepresentation, error)
 
 	CreateRealmClientScope(clientScope *v1alpha1.KeycloakClientScope, realmName string) error
-  UpdateRealmClientScope(clientScope *v1alpha1.KeycloakClientScope, realmName string, clientScopeID string) error
-  DeleteRealmClientScope(realmName string, clientScopeID string) error
-  ListRealmClientScopes(realmName string) ([]*v1alpha1.KeycloakClientScope, error)
+	UpdateRealmClientScope(clientScope *v1alpha1.KeycloakClientScope, realmName string, clientScopeID string) error
+	DeleteRealmClientScope(realmName string, clientScopeID string) error
+	ListRealmClientScopes(realmName string) ([]*v1alpha1.KeycloakClientScope, error)
 
 	RegisterRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string) error
 	UpdateRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string, aliasID string) error

@@ -556,67 +556,67 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 }
 
 func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error {
-  realmName := obj.Spec.Realm.Realm
-  actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
+	realmName := obj.Spec.Realm.Realm
+	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
 
-  // Fetch realm required actions from Keycloak API
-  actualRealmRequiredActions, err := i.keycloakClient.ListRealmRequiredActions(realmName)
-  if err != nil {
-    return err
-  }
+	// Fetch realm required actions from Keycloak API
+	actualRealmRequiredActions, err := i.keycloakClient.ListRealmRequiredActions(realmName)
+	if err != nil {
+		return err
+	}
 
-  actualRealmRequiredActionsAliases, actualRealmRequiredActionsMap := prepareActualRealmRequiredActions(actualRealmRequiredActions)
+	actualRealmRequiredActionsAliases, actualRealmRequiredActionsMap := prepareActualRealmRequiredActions(actualRealmRequiredActions)
 	desiredRealmRequiredActionsAliases, desiredRealmRequiredActionsMap := prepareDesiredRealmRequiredActions(obj)
 
-  requiredActionsToRemove := difference(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases)
-  requiredActionsToAdd := difference(desiredRealmRequiredActionsAliases, actualRealmRequiredActionsAliases)
-  requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), requiredActionsToAdd)
+	requiredActionsToRemove := difference(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases)
+	requiredActionsToAdd := difference(desiredRealmRequiredActionsAliases, actualRealmRequiredActionsAliases)
+	requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), requiredActionsToAdd)
 
-  actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION] Adding: %v, Comparing: %v", requiredActionsToAdd, requiredActionsToCompare))
+	actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION] Adding: %v, Comparing: %v", requiredActionsToAdd, requiredActionsToCompare))
 
-  // Do additions
-  for _, alias := range requiredActionsToAdd {
-    actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION] Registering new realm required action %v", alias))
-    err = i.keycloakClient.RegisterRealmRequiredAction(desiredRealmRequiredActionsMap[alias], realmName)
-    if err != nil {
-      requiredActionJSON, jsonerr := json.Marshal(desiredRealmRequiredActionsMap[alias])
-      if jsonerr != nil {
-        actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION - ERROR] Registering new realm required action %v, and unable to marshal JSON.", alias))
-        return err
-      }
-      actionLogger.Info(fmt.Sprintf("[REALM ROLE REGISTRATION - ERROR] Creating new realm role %v", requiredActionJSON))
-      return err
-    }
-  }
+	// Do additions
+	for _, alias := range requiredActionsToAdd {
+		actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION] Registering new realm required action %v", alias))
+		err = i.keycloakClient.RegisterRealmRequiredAction(desiredRealmRequiredActionsMap[alias], realmName)
+		if err != nil {
+			requiredActionJSON, jsonerr := json.Marshal(desiredRealmRequiredActionsMap[alias])
+			if jsonerr != nil {
+				actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION - ERROR] Registering new realm required action %v, and unable to marshal JSON.", alias))
+				return err
+			}
+			actionLogger.Info(fmt.Sprintf("[REALM ROLE REGISTRATION - ERROR] Creating new realm role %v", requiredActionJSON))
+			return err
+		}
+	}
 
-  // If additions were made, rebuild the actual realm list. In case new roles are used in composites.
-  if len(requiredActionsToAdd) > 0 {
-    actionLogger.Info("Required actions were added, rebuild action list.")
-    actualRealmRequiredActions, err = i.keycloakClient.ListRealmRequiredActions(realmName)
-    if err != nil {
-      return err
-    }
-    _, actualRealmRequiredActionsMap = prepareActualRealmRequiredActions(actualRealmRequiredActions)
-  }
+	// If additions were made, rebuild the actual realm list. In case new roles are used in composites.
+	if len(requiredActionsToAdd) > 0 {
+		actionLogger.Info("Required actions were added, rebuild action list.")
+		actualRealmRequiredActions, err = i.keycloakClient.ListRealmRequiredActions(realmName)
+		if err != nil {
+			return err
+		}
+		_, actualRealmRequiredActionsMap = prepareActualRealmRequiredActions(actualRealmRequiredActions)
+	}
 
-  // Do comparisons
-  for _, alias := range requiredActionsToCompare {
-    err = i.compareAndUpdateRealmRequiredRole(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
-    if err != nil {
-      return err
-    }
-  }
+	// Do comparisons
+	for _, alias := range requiredActionsToCompare {
+		err = i.compareAndUpdateRealmRequiredRole(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
+		if err != nil {
+			return err
+		}
+	}
 
-  // Do deletions
-  for _, alias := range requiredActionsToRemove {
-    actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION DELETION - ERROR] Deleting realm required action %v. Deletion of realm required actions is not supported.", alias))
-  }
+	// Do deletions
+	for _, alias := range requiredActionsToRemove {
+		actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION DELETION - ERROR] Deleting realm required action %v. Deletion of realm required actions is not supported.", alias))
+	}
 
-  return nil
+	return nil
 }
 
 func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakRealm) error {
-  realmName := obj.Spec.Realm.Realm
+	realmName := obj.Spec.Realm.Realm
 	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
 
 	// Fetch realm roles from Keycloak API
@@ -679,7 +679,7 @@ func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakR
 		}
 	}
 
-  return nil
+	return nil
 }
 
 /**
@@ -784,22 +784,22 @@ func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) e
  * "Fails fast" and prints error if any Keycloak API request fails.
 **/
 func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
-  roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
+	roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
 
-  if dRequiredAction.DefaultAction != aRequiredAction.DefaultAction ||  dRequiredAction.Enabled != aRequiredAction.Enabled {
-    roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE] Update generic values of realm required action %v.", aRequiredAction.Alias))
-    err := i.keycloakClient.UpdateRealmRequiredAction(dRequiredAction, realmName, aRequiredAction.Alias)
-    if err != nil {
-      requiredActionJSON, jsonerr := json.Marshal(*dRequiredAction)
-      if jsonerr != nil {
-        roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION - ERROR] Unable to update realm required action %v, and unable to marshal JSON.", aRequiredAction.Alias))
-        return err
-      }
-      roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE - ERROR] Unable to update realm required action %s", requiredActionJSON))
-      return err
-    }
-  }
-  return nil
+	if dRequiredAction.DefaultAction != aRequiredAction.DefaultAction || dRequiredAction.Enabled != aRequiredAction.Enabled {
+		roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE] Update generic values of realm required action %v.", aRequiredAction.Alias))
+		err := i.keycloakClient.UpdateRealmRequiredAction(dRequiredAction, realmName, aRequiredAction.Alias)
+		if err != nil {
+			requiredActionJSON, jsonerr := json.Marshal(*dRequiredAction)
+			if jsonerr != nil {
+				roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION - ERROR] Unable to update realm required action %v, and unable to marshal JSON.", aRequiredAction.Alias))
+				return err
+			}
+			roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE - ERROR] Unable to update realm required action %s", requiredActionJSON))
+			return err
+		}
+	}
+	return nil
 }
 
 /**
@@ -817,7 +817,7 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string
  *
 **/
 func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
-  roleLogger := actionLogger.WithValues("Realm.Role", dClientScope.Name)
+	roleLogger := actionLogger.WithValues("Realm.Role", dClientScope.Name)
 
 	if !genericEqualsRealmClientScopes(dClientScope, aClientScope) {
 		roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE] Update generic values of realm client scope %v.", aClientScope.Name))
@@ -833,7 +833,7 @@ func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string,
 		}
 	}
 
-  return nil
+	return nil
 }
 
 /**
@@ -1205,7 +1205,7 @@ func prepareActualRealmRequiredActions(actualRealmRequiredActions []*v1alpha1.Ke
 	actualRequiredActionAliases := []string{}
 	for _, aRequiredAction := range actualRealmRequiredActions {
 		actualRequiredActionMap[aRequiredAction.Alias] = aRequiredAction
-    actualRequiredActionAliases = append(actualRequiredActionAliases, aRequiredAction.Alias)
+		actualRequiredActionAliases = append(actualRequiredActionAliases, aRequiredAction.Alias)
 	}
 	return actualRequiredActionAliases, actualRequiredActionMap
 }
@@ -1224,7 +1224,7 @@ func prepareDesiredRealmRequiredActions(obj *v1alpha1.KeycloakRealm) ([]string, 
 	for _, dRequiredAction := range desiredRealmRequiredActions {
 		dRequiredActionCopy := dRequiredAction // IMPORTANT! See: https://stackoverflow.com/a/48826629
 		desiredRequiredActionMap[dRequiredActionCopy.Alias] = &dRequiredActionCopy
-    desiredRequiredActionAliases = append(desiredRequiredActionAliases, dRequiredActionCopy.Alias)
+		desiredRequiredActionAliases = append(desiredRequiredActionAliases, dRequiredActionCopy.Alias)
 	}
 	return desiredRequiredActionAliases, desiredRequiredActionMap
 }
@@ -1236,7 +1236,7 @@ func prepareActualRealmClientScopes(actualRealmClientScopes []*v1alpha1.Keycloak
 	for _, aClientScope := range actualRealmClientScopes {
 		actualClientScopeMap[aClientScope.Name] = aClientScope
 		actualClientScopeMap[aClientScope.ID] = aClientScope
-    actualClientScopeNames = append(actualClientScopeNames, aClientScope.Name)
+		actualClientScopeNames = append(actualClientScopeNames, aClientScope.Name)
 	}
 	return actualClientScopeNames, actualClientScopeMap
 }
@@ -1255,7 +1255,7 @@ func prepareDesiredRealmClientScopes(obj *v1alpha1.KeycloakRealm) ([]string, map
 	for _, dClientScope := range desiredRealmClientScopes {
 		dClientScopeCopy := dClientScope // IMPORTANT! See: https://stackoverflow.com/a/48826629
 		desiredClientScopeMap[dClientScopeCopy.Name] = &dClientScopeCopy
-    desiredClientScopeNames = append(desiredClientScopeNames, dClientScopeCopy.Name)
+		desiredClientScopeNames = append(desiredClientScopeNames, dClientScopeCopy.Name)
 	}
 	return desiredClientScopeNames, desiredClientScopeMap
 }
