@@ -789,7 +789,25 @@ func (c *Client) DeleteRealmClientScope(realmName string, clientScopeID string) 
 	return c.delete(fmt.Sprintf("realms/%s/client-scopes/%s", realmName, clientScopeID), "Realm Client Scope", nil)
 }
 
-func (c *Client) ListRealmClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error) {
+func (c *Client) ListRealmClientScopes(realmName string) ([]*v1alpha1.KeycloakClientScope, error) {
+  result, err := c.list(fmt.Sprintf("realms/%s/client-scopes", realmName), "Realm Client Scopes", func(body []byte) (T, error) {
+		var clientScopes []*v1alpha1.KeycloakClientScope
+		err := json.Unmarshal(body, &clientScopes)
+		return clientScopes, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultAsClientScope, ok := result.([]*v1alpha1.KeycloakClientScope)
+	if !ok {
+		return nil, err
+	}
+	return resultAsClientScope, err
+}
+
+func (c *Client) ListAvailableClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error) {
 	return c.listClientScopes(fmt.Sprintf("realms/%s/client-scopes", realmName), "available client scopes")
 }
 
@@ -1082,7 +1100,7 @@ type KeycloakInterface interface {
 	CreateRealmClientScope(clientScope *v1alpha1.KeycloakClientScope, realmName string) error
   UpdateRealmClientScope(clientScope *v1alpha1.KeycloakClientScope, realmName string, clientScopeID string) error
   DeleteRealmClientScope(realmName string, clientScopeID string) error
-  ListRealmClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error)
+  ListRealmClientScopes(realmName string) ([]*v1alpha1.KeycloakClientScope, error)
 
 	RegisterRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string) error
 	UpdateRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string, aliasID string) error
@@ -1096,6 +1114,7 @@ type KeycloakInterface interface {
 	DeleteClient(clientID, realmName string) error
 	ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error)
 	ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRepresentation, error)
+	ListAvailableClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error)
 	ListScopeMappings(clientID, realmName string) (*v1alpha1.MappingsRepresentation, error)
 	ListDefaultClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error)
 	ListOptionalClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error)

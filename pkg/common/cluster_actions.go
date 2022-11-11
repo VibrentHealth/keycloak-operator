@@ -661,12 +661,12 @@ func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakR
 	}
 
 	// Do comparisons
-// 	for _, name := range clientScopesToCompare {
-// 		err = i.compareAndUpdateRealmClientScope(realmName, desiredRealmClientScopeMap[name], actualRealmClientScopeMap[name], actualRealmClientScopeMap, actionLogger)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
+	for _, name := range clientScopesToCompare {
+		err = i.compareAndUpdateRealmClientScope(realmName, desiredRealmClientScopeMap[name], actualRealmClientScopeMap[name], actualRealmClientScopeMap, actionLogger)
+		if err != nil {
+			return err
+		}
+	}
 
 	// Do deletions
 	for _, name := range clientScopesToRemove {
@@ -784,6 +784,23 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string
 }
 
 func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
+  roleLogger := actionLogger.WithValues("Realm.Role", dClientScope.Name)
+
+  // Step 1
+	if dClientScope.Name != aClientScope.Name || dClientScope.Protocol != aClientScope.Protocol || dClientScope.Description != aClientScope.Description {
+		roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE] Update generic values of realm client scope %v.", aClientScope.Name))
+		err := i.keycloakClient.UpdateRealmClientScope(dClientScope, realmName, aClientScope.ID)
+		if err != nil {
+			clientScopeJSON, jsonerr := json.Marshal(*dClientScope)
+			if jsonerr != nil {
+				roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm client scope %v, and unable to marshal JSON.", aClientScope.Name))
+				return err
+			}
+			roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm client scope %s", clientScopeJSON))
+			return err
+		}
+	}
+
   return nil
 }
 
@@ -1176,8 +1193,8 @@ func prepareDesiredRealmRequiredActions(obj *v1alpha1.KeycloakRealm) ([]string, 
 }
 
 // Create Map that maps name OR id to the KeycloakClientScope, and return a list of the client scope names.
-func prepareActualRealmClientScopes(actualRealmClientScopes []v1alpha1.KeycloakClientScope) ([]string, map[string]v1alpha1.KeycloakClientScope) {
-	actualClientScopeMap := make(map[string]v1alpha1.KeycloakClientScope)
+func prepareActualRealmClientScopes(actualRealmClientScopes []*v1alpha1.KeycloakClientScope) ([]string, map[string]*v1alpha1.KeycloakClientScope) {
+	actualClientScopeMap := make(map[string]*v1alpha1.KeycloakClientScope)
 	actualClientScopeNames := []string{}
 	for _, aClientScope := range actualRealmClientScopes {
 		actualClientScopeMap[aClientScope.Name] = aClientScope
