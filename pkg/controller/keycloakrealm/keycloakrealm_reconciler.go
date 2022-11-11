@@ -50,9 +50,9 @@ func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState,
 
 	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr, realmLogger))
 	desired.AddAction(i.getRealmRolesDesiredState(state, cr, realmLogger))
+	desired.AddAction(i.getAuthenticationFlowsDesiredState(state, cr, realmLogger))
 	desired.AddAction(i.getRealmRequiredActionsDesiredState(state, cr, realmLogger))
 	desired.AddAction(i.getRealmClientScopesDesiredState(state, cr, realmLogger))
-	desired.AddAction(i.getAuthenticationFlowsDesiredState(state, cr, realmLogger))
 
 	return desired
 }

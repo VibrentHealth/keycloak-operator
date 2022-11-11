@@ -570,7 +570,7 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 
   requiredActionsToRemove := difference(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases)
   requiredActionsToAdd := difference(desiredRealmRequiredActionsAliases, actualRealmRequiredActionsAliases)
-  requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), append(requiredActionsToAdd))
+  requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), requiredActionsToAdd)
 
   actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION] Adding: %v, Comparing: %v", requiredActionsToAdd, requiredActionsToCompare))
 
@@ -764,6 +764,25 @@ func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) e
 	return nil
 }
 
+/**
+ * Compare a realm required actions' desired and actual state and issue updates if necessary.
+ *
+ * ARGS
+ * * realmName string, used by keycloakClient for http requests
+ * * dRole RoleRepresentation: The desired state for comparison, parsed from the CR definition
+ * * aRole RoleRepresentation: The actual state for comparison, queried from the Keycloak API
+ * * allActualRolesMap map[string]*v1alpha1.RoleRepresentation: Map contains all current roles queried from the Keycloak API, including roles just created in this reconciliation. Keys are role name OR role ID.
+ * * actionLogger logr: Used for logging.
+ *
+ * DESCRIPTION
+ * 1. First, compare the role's `Description` and `Attributes`. If there is a difference, issue an UPDATE ROLE request.
+ * 2. If the `Composite` attribute is `true` for the actual OR desired state, then also resolve differences in composites list.
+ *   a. Fetch the current list of composites for the actual role from the Keycloak API, and compare it to the desired list from the CR.
+ *   b. If necessary, add new composites (in single Keycloak API request)
+ *   c. If necessary, remove existing composites (in single Keycloak API request)
+ *
+ * "Fails fast" and prints error if any Keycloak API request fails.
+**/
 func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
   roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
 
@@ -783,20 +802,33 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string
   return nil
 }
 
+/**
+ * Compare a realm client scopes' desired and actual state and issue updates if necessary.
+ *
+ * ARGS
+ * * realmName string, used by keycloakClient for http requests
+ * * dClientScope KeycloakClientScope: The desired state for comparison, parsed from the CR definition
+ * * aClientScope KeycloakClientScope: The actual state for comparison, queried from the Keycloak API
+ * * allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope: Map contains all current client scopes queried from the Keycloak API, including client scopes just created in this reconciliation. Keys are client scope name OR client scope ID.
+ * * actionLogger logr: Used for logging.
+ *
+ * DESCRIPTION
+ * Compare the client scope's `Description`, `Protocol`, `Name` and `Attributes`. If there is a difference, issue an UPDATE CLIENT SCOPE request.
+ *
+**/
 func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
   roleLogger := actionLogger.WithValues("Realm.Role", dClientScope.Name)
 
-  // Step 1
-	if dClientScope.Name != aClientScope.Name || dClientScope.Protocol != aClientScope.Protocol || dClientScope.Description != aClientScope.Description {
+	if !genericEqualsRealmClientScopes(dClientScope, aClientScope) {
 		roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE] Update generic values of realm client scope %v.", aClientScope.Name))
 		err := i.keycloakClient.UpdateRealmClientScope(dClientScope, realmName, aClientScope.ID)
 		if err != nil {
 			clientScopeJSON, jsonerr := json.Marshal(*dClientScope)
 			if jsonerr != nil {
-				roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm client scope %v, and unable to marshal JSON.", aClientScope.Name))
+				roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE - ERROR] Unable to update realm client scope %v, and unable to marshal JSON.", aClientScope.Name))
 				return err
 			}
-			roleLogger.Info(fmt.Sprintf("[REALM ROLE CHANGE - ERROR] Unable to update realm client scope %s", clientScopeJSON))
+			roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE - ERROR] Unable to update realm client scope %s", clientScopeJSON))
 			return err
 		}
 	}
@@ -1149,6 +1181,11 @@ func (i *ClusterActionRunner) recursivelyReconcileAuthFlow(realmName string, dfl
 // Compare a desired vs actual RoleRepresentation for differences in Name, Description or Attributes
 func genericEqualsRealmRoles(drole *v1alpha1.RoleRepresentation, arole *v1alpha1.RoleRepresentation) bool {
 	return arole.Description == drole.Description && arole.Name == drole.Name && reflect.DeepEqual(arole.Attributes, drole.Attributes)
+}
+
+// Compare a desired vs actual KeycloakClientScope for differences in Name, Description, Protocol or Attributes
+func genericEqualsRealmClientScopes(dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope) bool {
+	return dClientScope.Name == aClientScope.Name && dClientScope.Protocol == aClientScope.Protocol && dClientScope.Description == aClientScope.Description && reflect.DeepEqual(aClientScope.Attributes, dClientScope.Attributes)
 }
 
 // If any nested portion is nil, an empty list is returned.
