@@ -64,6 +64,7 @@ type ActionRunner interface {
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	UpdateRealmRoles(obj *v1alpha1.KeycloakRealm) error
 	UpdateRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error
+	UpdateRealmClientScopes(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
 
@@ -482,6 +483,15 @@ func (i *ClusterActionRunner) UpdateRealmRoles(obj *v1alpha1.KeycloakRealm) erro
 	return i.configureRealmRoles(obj)
 }
 
+// Configure realm client scopes.
+func (i *ClusterActionRunner) UpdateRealmClientScopes(obj *v1alpha1.KeycloakRealm) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform realm client scopes configure when client is nil")
+	}
+
+	return i.configureRealmClientScopes(obj)
+}
+
 // Configure realm required actions.
 func (i *ClusterActionRunner) UpdateRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
@@ -605,6 +615,73 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
   return nil
 }
 
+func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakRealm) error {
+  realmName := obj.Spec.Realm.Realm
+	actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
+
+	// Fetch realm roles from Keycloak API
+	actualRealmClientScopes, err := i.keycloakClient.ListRealmClientScopes(realmName)
+	if err != nil {
+		return err
+	}
+
+	// Return a map of role names to RoleRepresentation objects, and the key set as a list.
+	actualRealmClientScopeNames, actualRealmClientScopeMap := prepareActualRealmClientScopes(actualRealmClientScopes)
+	desiredRealmClientScopeNames, desiredRealmClientScopeMap := prepareDesiredRealmClientScopes(obj)
+
+	clientScopesToRemove := difference(actualRealmClientScopeNames, desiredRealmClientScopeNames)
+	clientScopesToAdd := difference(desiredRealmClientScopeNames, actualRealmClientScopeNames)
+	clientScopesToCompare := difference(union(actualRealmClientScopeNames, desiredRealmClientScopeNames), append(clientScopesToAdd, clientScopesToRemove...))
+
+	actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE] Adding: %v, Comparing: %v, Removing: %v", clientScopesToAdd, clientScopesToCompare, clientScopesToRemove))
+
+	// Do additions
+	for _, name := range clientScopesToAdd {
+		actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CREATION] Creating new realm client scope %v", name))
+		err = i.keycloakClient.CreateRealmClientScope(desiredRealmClientScopeMap[name], realmName)
+		if err != nil {
+			clientScopeJSON, jsonerr := json.Marshal(desiredRealmClientScopeMap[name])
+			if jsonerr != nil {
+				actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CREATION - ERROR] Creating new realm client scope %v, and unable to marshal JSON.", name))
+				return err
+			}
+			actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CREATION - ERROR] Creating new realm client scope %v", clientScopeJSON))
+			return err
+		}
+	}
+
+	// If additions were made, rebuild the actual realm list.
+	if len(clientScopesToAdd) > 0 {
+		actionLogger.Info("Client scopes were added, rebuild client scope list.")
+		actualRealmClientScopes, err = i.keycloakClient.ListRealmClientScopes(realmName)
+		if err != nil {
+			return err
+		}
+		_, actualRealmClientScopeMap = prepareActualRealmClientScopes(actualRealmClientScopes)
+	}
+
+	// Do comparisons
+// 	for _, name := range clientScopesToCompare {
+// 		err = i.compareAndUpdateRealmClientScope(realmName, desiredRealmClientScopeMap[name], actualRealmClientScopeMap[name], actualRealmClientScopeMap, actionLogger)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+
+	// Do deletions
+	for _, name := range clientScopesToRemove {
+		actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE DELETION] Deleting realm client scope %v.", name))
+		actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE DELETION] Deleting realm client scope ID %v.", actualRealmClientScopeMap[name].ID))
+		err = i.keycloakClient.DeleteRealmClientScope(realmName, actualRealmClientScopeMap[name].ID)
+		if err != nil {
+			actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE DELETION - ERROR] Unable to delete existing realm client scope %v.", name))
+			return err
+		}
+	}
+
+  return nil
+}
+
 /**
  * Vibrent logic to compare and issue updates to Realm Roles
  *
@@ -703,6 +780,10 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string
       return err
     }
   }
+  return nil
+}
+
+func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
   return nil
 }
 
@@ -1094,6 +1175,37 @@ func prepareDesiredRealmRequiredActions(obj *v1alpha1.KeycloakRealm) ([]string, 
 	return desiredRequiredActionAliases, desiredRequiredActionMap
 }
 
+// Create Map that maps name OR id to the KeycloakClientScope, and return a list of the client scope names.
+func prepareActualRealmClientScopes(actualRealmClientScopes []v1alpha1.KeycloakClientScope) ([]string, map[string]v1alpha1.KeycloakClientScope) {
+	actualClientScopeMap := make(map[string]v1alpha1.KeycloakClientScope)
+	actualClientScopeNames := []string{}
+	for _, aClientScope := range actualRealmClientScopes {
+		actualClientScopeMap[aClientScope.Name] = aClientScope
+		actualClientScopeMap[aClientScope.ID] = aClientScope
+    actualClientScopeNames = append(actualClientScopeNames, aClientScope.Name)
+	}
+	return actualClientScopeNames, actualClientScopeMap
+}
+
+// Create Map from client scope name to client scope, and return a list of the client scope names.
+func prepareDesiredRealmClientScopes(obj *v1alpha1.KeycloakRealm) ([]string, map[string]*v1alpha1.KeycloakClientScope) {
+	desiredClientScopeMap := make(map[string]*v1alpha1.KeycloakClientScope)
+	desiredClientScopeNames := []string{}
+
+	// Safety check to avoid panic
+	if obj.Spec.Realm.ClientScopes == nil {
+		return desiredClientScopeNames, desiredClientScopeMap // return empty structures
+	}
+
+	desiredRealmClientScopes := obj.Spec.Realm.ClientScopes
+	for _, dClientScope := range desiredRealmClientScopes {
+		dClientScopeCopy := dClientScope // IMPORTANT! See: https://stackoverflow.com/a/48826629
+		desiredClientScopeMap[dClientScopeCopy.Name] = &dClientScopeCopy
+    desiredClientScopeNames = append(desiredClientScopeNames, dClientScopeCopy.Name)
+	}
+	return desiredClientScopeNames, desiredClientScopeMap
+}
+
 // Create Map that maps name OR id to the RoleRepresentation, and return a list of the role names.
 func prepareActualRealmRoles(actualRealmRoles []*v1alpha1.RoleRepresentation, ignoredRolesList []string) ([]string, map[string]*v1alpha1.RoleRepresentation) {
 	actualRoleMap := make(map[string]*v1alpha1.RoleRepresentation)
@@ -1368,6 +1480,11 @@ type UpdateRealmRolesAction struct {
 	Msg string
 }
 
+type UpdateRealmClientScopesAction struct {
+	Ref *v1alpha1.KeycloakRealm
+	Msg string
+}
+
 type UpdateRealmRequiredActionsAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
@@ -1533,6 +1650,10 @@ func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
 
 func (i UpdateRealmRolesAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.UpdateRealmRoles(i.Ref)
+}
+
+func (i UpdateRealmClientScopesAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateRealmClientScopes(i.Ref)
 }
 
 func (i UpdateRealmRequiredActionsAction) Run(runner ActionRunner) (string, error) {

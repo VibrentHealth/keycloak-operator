@@ -149,7 +149,7 @@ func (i *ClientState) readClientScopes(cr *kc.KeycloakClient, realmClient Keyclo
 	// It is not strictly a property of the client but rather of the realm.
 	// However could not figure out a better way to convey it to populate default and optional
 	// client scopes which requires client scope IDs.
-	i.AvailableClientScopes, err = realmClient.ListAvailableClientScopes(i.Realm.Spec.Realm.Realm)
+	i.AvailableClientScopes, err = realmClient.ListRealmClientScopes(i.Realm.Spec.Realm.Realm)
 	if err != nil {
 		return err
 	}
