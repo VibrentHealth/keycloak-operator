@@ -154,6 +154,34 @@ func (c *Client) AddRealmRoleComposites(realmName, roleID string, roles *[]v1alp
 	return err
 }
 
+func (c *Client) RegisterRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string) error {
+	_, err := c.create(requiredAction, fmt.Sprintf("realms/%s/authentication/register-required-action", realmName), "realm required action")
+	return err
+}
+
+func (c *Client) UpdateRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string, aliasID string) error {
+	return c.update(requiredAction, fmt.Sprintf("realms/%s/authentication/required-actions/%s", realmName, aliasID), "realm required action")
+}
+
+func (c *Client) ListRealmRequiredActions(realmName string) ([]*v1alpha1.KeycloakAPIRequiredAction, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/authentication/required-actions", realmName), "Realm Required Actions", func(body []byte) (T, error) {
+		var realmRequiredActions []*v1alpha1.KeycloakAPIRequiredAction
+
+		err := json.Unmarshal(body, &realmRequiredActions)
+		return realmRequiredActions, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultAsRequiredAction, ok := result.([]*v1alpha1.KeycloakAPIRequiredAction)
+	if !ok {
+		return nil, err
+	}
+	return resultAsRequiredAction, err
+}
+
 func (c *Client) CreateClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error {
 	_, err := c.create(mappings, fmt.Sprintf("realms/%s/clients/%s/scope-mappings/realm", realmName, specClient.ID), "client realm scope mappings")
 	return err
@@ -1037,6 +1065,10 @@ type KeycloakInterface interface {
 	UpdateRealmRole(role *v1alpha1.RoleRepresentation, realmName string, roleID string) error
 	DeleteRealmRole(realmName string, roleID string) error
 	ListRealmRoles(realmName string) ([]*v1alpha1.RoleRepresentation, error)
+
+	RegisterRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string) error
+	UpdateRealmRequiredAction(requiredAction *v1alpha1.KeycloakAPIRequiredAction, realmName string, aliasID string) error
+	ListRealmRequiredActions(realmName string) ([]*v1alpha1.KeycloakAPIRequiredAction, error)
 
 	CreateClient(client *v1alpha1.KeycloakAPIClient, realmName string) (string, error)
 	GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPIClient, error)

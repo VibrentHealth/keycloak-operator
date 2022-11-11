@@ -63,6 +63,7 @@ type ActionRunner interface {
 	UpdateAuthenticationFlows(obj *v1alpha1.KeycloakRealm) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	UpdateRealmRoles(obj *v1alpha1.KeycloakRealm) error
+	UpdateRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
 
@@ -481,6 +482,15 @@ func (i *ClusterActionRunner) UpdateRealmRoles(obj *v1alpha1.KeycloakRealm) erro
 	return i.configureRealmRoles(obj)
 }
 
+// Configure realm required actions.
+func (i *ClusterActionRunner) UpdateRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform realm required actions configure when client is nil")
+	}
+
+	return i.configureRealmRequiredActions(obj)
+}
+
 func (i *ClusterActionRunner) UpdateAuthenticationFlows(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform authentication flow configure when client is nil")
@@ -533,6 +543,66 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 	}
 
 	return nil
+}
+
+func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.KeycloakRealm) error {
+  realmName := obj.Spec.Realm.Realm
+  actionLogger := log.WithValues("Request.Namespace", obj.Namespace, "Request.Name", obj.Name, "Realm.Name", realmName)
+
+  // Fetch realm required actions from Keycloak API
+  actualRealmRequiredActions, err := i.keycloakClient.ListRealmRequiredActions(realmName)
+  if err != nil {
+    return err
+  }
+
+  actualRealmRequiredActionsAliases, actualRealmRequiredActionsMap := prepareActualRealmRequiredActions(actualRealmRequiredActions)
+	desiredRealmRequiredActionsAliases, desiredRealmRequiredActionsMap := prepareDesiredRealmRequiredActions(obj)
+
+  requiredActionsToRemove := difference(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases)
+  requiredActionsToAdd := difference(desiredRealmRequiredActionsAliases, actualRealmRequiredActionsAliases)
+  requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), append(requiredActionsToAdd))
+
+  actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION] Adding: %v, Comparing: %v", requiredActionsToAdd, requiredActionsToCompare))
+
+  // Do additions
+  for _, alias := range requiredActionsToAdd {
+    actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION] Registering new realm required action %v", alias))
+    err = i.keycloakClient.RegisterRealmRequiredAction(desiredRealmRequiredActionsMap[alias], realmName)
+    if err != nil {
+      requiredActionJSON, jsonerr := json.Marshal(desiredRealmRequiredActionsMap[alias])
+      if jsonerr != nil {
+        actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION REGISTRATION - ERROR] Registering new realm required action %v, and unable to marshal JSON.", alias))
+        return err
+      }
+      actionLogger.Info(fmt.Sprintf("[REALM ROLE REGISTRATION - ERROR] Creating new realm role %v", requiredActionJSON))
+      return err
+    }
+  }
+
+  // If additions were made, rebuild the actual realm list. In case new roles are used in composites.
+  if len(requiredActionsToAdd) > 0 {
+    actionLogger.Info("Required actions were added, rebuild action list.")
+    actualRealmRequiredActions, err = i.keycloakClient.ListRealmRequiredActions(realmName)
+    if err != nil {
+      return err
+    }
+    _, actualRealmRequiredActionsMap = prepareActualRealmRequiredActions(actualRealmRequiredActions)
+  }
+
+  // Do comparisons
+  for _, alias := range requiredActionsToCompare {
+    err = i.compareAndUpdateRealmRequiredRole(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
+    if err != nil {
+      return err
+    }
+  }
+
+  // Do deletions
+  for _, alias := range requiredActionsToRemove {
+    actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION DELETION - ERROR] Deleting realm required action %v. Deletion of realm required actions is not supported.", alias))
+  }
+
+  return nil
 }
 
 /**
@@ -615,6 +685,25 @@ func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) e
 	}
 
 	return nil
+}
+
+func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
+  roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
+
+  if dRequiredAction.DefaultAction != aRequiredAction.DefaultAction ||  dRequiredAction.Enabled != aRequiredAction.Enabled {
+    roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE] Update generic values of realm required action %v.", aRequiredAction.Alias))
+    err := i.keycloakClient.UpdateRealmRequiredAction(dRequiredAction, realmName, aRequiredAction.Alias)
+    if err != nil {
+      requiredActionJSON, jsonerr := json.Marshal(*dRequiredAction)
+      if jsonerr != nil {
+        roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION - ERROR] Unable to update realm required action %v, and unable to marshal JSON.", aRequiredAction.Alias))
+        return err
+      }
+      roleLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION CHANGE - ERROR] Unable to update realm required action %s", requiredActionJSON))
+      return err
+    }
+  }
+  return nil
 }
 
 /**
@@ -975,6 +1064,36 @@ func safelyGetCompositeNames(drole *v1alpha1.RoleRepresentation) []string {
 	return names
 }
 
+// Create Map that maps alias to the KeycloakAPIRequiredAction, and return a list of the required action aliases.
+func prepareActualRealmRequiredActions(actualRealmRequiredActions []*v1alpha1.KeycloakAPIRequiredAction) ([]string, map[string]*v1alpha1.KeycloakAPIRequiredAction) {
+	actualRequiredActionMap := make(map[string]*v1alpha1.KeycloakAPIRequiredAction)
+	actualRequiredActionAliases := []string{}
+	for _, aRequiredAction := range actualRealmRequiredActions {
+		actualRequiredActionMap[aRequiredAction.Alias] = aRequiredAction
+    actualRequiredActionAliases = append(actualRequiredActionAliases, aRequiredAction.Alias)
+	}
+	return actualRequiredActionAliases, actualRequiredActionMap
+}
+
+// Return a list of the desired realm role actions aliases.
+func prepareDesiredRealmRequiredActions(obj *v1alpha1.KeycloakRealm) ([]string, map[string]*v1alpha1.KeycloakAPIRequiredAction) {
+	desiredRequiredActionMap := make(map[string]*v1alpha1.KeycloakAPIRequiredAction)
+	desiredRequiredActionAliases := []string{}
+
+	// Safety check to avoid panic
+	if obj.Spec.Realm.RequiredActions == nil {
+		return desiredRequiredActionAliases, desiredRequiredActionMap // return empty structures
+	}
+
+	desiredRealmRequiredActions := obj.Spec.Realm.RequiredActions
+	for _, dRequiredAction := range desiredRealmRequiredActions {
+		dRequiredActionCopy := dRequiredAction // IMPORTANT! See: https://stackoverflow.com/a/48826629
+		desiredRequiredActionMap[dRequiredActionCopy.Alias] = &dRequiredActionCopy
+    desiredRequiredActionAliases = append(desiredRequiredActionAliases, dRequiredActionCopy.Alias)
+	}
+	return desiredRequiredActionAliases, desiredRequiredActionMap
+}
+
 // Create Map that maps name OR id to the RoleRepresentation, and return a list of the role names.
 func prepareActualRealmRoles(actualRealmRoles []*v1alpha1.RoleRepresentation, ignoredRolesList []string) ([]string, map[string]*v1alpha1.RoleRepresentation) {
 	actualRoleMap := make(map[string]*v1alpha1.RoleRepresentation)
@@ -1249,6 +1368,11 @@ type UpdateRealmRolesAction struct {
 	Msg string
 }
 
+type UpdateRealmRequiredActionsAction struct {
+	Ref *v1alpha1.KeycloakRealm
+	Msg string
+}
+
 type UpdateAuthenticationFlowsAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
@@ -1409,6 +1533,10 @@ func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
 
 func (i UpdateRealmRolesAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.UpdateRealmRoles(i.Ref)
+}
+
+func (i UpdateRealmRequiredActionsAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateRealmRequiredActions(i.Ref)
 }
 
 func (i UpdateAuthenticationFlowsAction) Run(runner ActionRunner) (string, error) {
