@@ -601,7 +601,7 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 
 	// Do comparisons
 	for _, alias := range requiredActionsToCompare {
-		err = i.compareAndUpdateRealmRequiredRole(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
+		err = i.compareAndUpdateRealmRequiredAction(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
 		if err != nil {
 			return err
 		}
@@ -769,21 +769,16 @@ func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) e
  *
  * ARGS
  * * realmName string, used by keycloakClient for http requests
- * * dRole RoleRepresentation: The desired state for comparison, parsed from the CR definition
- * * aRole RoleRepresentation: The actual state for comparison, queried from the Keycloak API
- * * allActualRolesMap map[string]*v1alpha1.RoleRepresentation: Map contains all current roles queried from the Keycloak API, including roles just created in this reconciliation. Keys are role name OR role ID.
+ * * dRequiredAction KeycloakAPIRequiredAction: The desired state for comparison, parsed from the CR definition
+ * * aRequiredAction KeycloakAPIRequiredAction: The actual state for comparison, queried from the Keycloak API
+ * * allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction: Map contains all current required actions queried from the Keycloak API, including actions just created in this reconciliation. Keys are action name OR action ID.
  * * actionLogger logr: Used for logging.
  *
  * DESCRIPTION
- * 1. First, compare the role's `Description` and `Attributes`. If there is a difference, issue an UPDATE ROLE request.
- * 2. If the `Composite` attribute is `true` for the actual OR desired state, then also resolve differences in composites list.
- *   a. Fetch the current list of composites for the actual role from the Keycloak API, and compare it to the desired list from the CR.
- *   b. If necessary, add new composites (in single Keycloak API request)
- *   c. If necessary, remove existing composites (in single Keycloak API request)
+ * First, compare the required action's `DefaultAction` and `Enabled`. If there is a difference, issue an UPDATE REQUIRED ACTION request.
  *
- * "Fails fast" and prints error if any Keycloak API request fails.
 **/
-func (i *ClusterActionRunner) compareAndUpdateRealmRequiredRole(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
+func (i *ClusterActionRunner) compareAndUpdateRealmRequiredAction(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
 	roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
 
 	if dRequiredAction.DefaultAction != aRequiredAction.DefaultAction || dRequiredAction.Enabled != aRequiredAction.Enabled {
