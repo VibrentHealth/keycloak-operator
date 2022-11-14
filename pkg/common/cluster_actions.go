@@ -589,7 +589,7 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 		}
 	}
 
-	// If additions were made, rebuild the actual realm list. In case new roles are used in composites.
+	// If additions were made, rebuild the actual realm list.
 	if len(requiredActionsToAdd) > 0 {
 		actionLogger.Info("Required actions were added, rebuild action list.")
 		actualRealmRequiredActions, err = i.keycloakClient.ListRealmRequiredActions(realmName)
@@ -812,7 +812,7 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredAction(realmName stri
  *
 **/
 func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
-	roleLogger := actionLogger.WithValues("Realm.Role", dClientScope.Name)
+	roleLogger := actionLogger.WithValues("Realm.ClientScopes", dClientScope.Name)
 
 	if !genericEqualsRealmClientScopes(dClientScope, aClientScope) {
 		roleLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CHANGE] Update generic values of realm client scope %v.", aClientScope.Name))
