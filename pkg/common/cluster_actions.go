@@ -570,7 +570,7 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 
 	requiredActionsToRemove := difference(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases)
 	requiredActionsToAdd := difference(desiredRealmRequiredActionsAliases, actualRealmRequiredActionsAliases)
-	requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), requiredActionsToAdd)
+	requiredActionsToCompare := difference(union(actualRealmRequiredActionsAliases, desiredRealmRequiredActionsAliases), append(requiredActionsToAdd, requiredActionsToRemove...))
 
 	actionLogger.Info(fmt.Sprintf("[REALM REQUIRED ACTION] Adding: %v, Comparing: %v", requiredActionsToAdd, requiredActionsToCompare))
 
