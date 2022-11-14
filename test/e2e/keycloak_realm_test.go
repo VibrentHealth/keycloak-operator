@@ -56,7 +56,7 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 	}
 }
 
-// This test step in this Struct cannot run in parallel or share a Keycloak resource with the other tests above.
+// This test step in this Struct cannot run in parallel or share a Keycloak resource with the other tests above.Test
 func NewKeycloakRealmsDeletionTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{prepareKeycloaksCR},
