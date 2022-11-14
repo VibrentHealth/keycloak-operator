@@ -43,6 +43,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithEventsTest": {
 				testFunction: keycloakRealmWithEventsTest,
 			},
+			"keycloakRealmWithRequiredActionsTest": {
+			  testFunction: keycloakRealmWithRequiredActionsTest,
+			},
 			"unmanagedKeycloakRealmTest": {
 				testFunction: keycloakUnmanagedRealmTest,
 			},
@@ -669,3 +672,26 @@ func keycloakRealmWithEventsTest(t *testing.T, framework *test.Framework, ctx *t
 
 	return WaitForRealmToBeReady(t, framework, namespace)
 }
+
+func keycloakRealmWithRequiredActionsTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+
+	keycloakRealmCR.Spec.Realm.RequiredActions = []keycloakv1alpha1.KeycloakAPIRequiredAction{
+  		{
+  			Name:          "Dummy action",
+  			Alias:         "dummy_action",
+  			DefaultAction: true,
+  			Enabled:       true,
+  			ProviderID:    "dummy_action",
+  			Priority:      10,
+  		},
+  }
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	return WaitForRealmToBeReady(t, framework, namespace)
+}
+
