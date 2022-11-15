@@ -589,16 +589,6 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 		}
 	}
 
-	// If additions were made, rebuild the actual realm list.
-	if len(requiredActionsToAdd) > 0 {
-		actionLogger.Info("Required actions were added, rebuild action list.")
-		actualRealmRequiredActions, err = i.keycloakClient.ListRealmRequiredActions(realmName)
-		if err != nil {
-			return err
-		}
-		_, actualRealmRequiredActionsMap = prepareActualRealmRequiredActions(actualRealmRequiredActions)
-	}
-
 	// Do comparisons
 	for _, alias := range requiredActionsToCompare {
 		err = i.compareAndUpdateRealmRequiredAction(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
@@ -648,16 +638,6 @@ func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakR
 			actionLogger.Info(fmt.Sprintf("[REALM CLIENT SCOPE CREATION - ERROR] Creating new realm client scope %v", clientScopeJSON))
 			return err
 		}
-	}
-
-	// If additions were made, rebuild the actual realm list.
-	if len(clientScopesToAdd) > 0 {
-		actionLogger.Info("Client scopes were added, rebuild client scope list.")
-		actualRealmClientScopes, err = i.keycloakClient.ListRealmClientScopes(realmName)
-		if err != nil {
-			return err
-		}
-		_, actualRealmClientScopeMap = prepareActualRealmClientScopes(actualRealmClientScopes)
 	}
 
 	// Do comparisons

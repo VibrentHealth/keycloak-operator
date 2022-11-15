@@ -26,6 +26,8 @@ Vibrent forked the Keycloak Operator to make the following custom changes. Broke
 * Chart and init configuration to control operator SYNC_PERIOD, and concurrency for realm and client loops.
 * New logic for updating "realm roles" in the KeycloakRealm reconcile logic.
 * New logic for updating custom Authentication Flows used for participant login, registration, and password reset (Not all types of update are supported).
+
+#### 1.8.X
 * New logic for updating "realm clientScopes" and "realm requiredActions" in the KeycloakRealm reconcile logic.
 
 ### Updating Custom Resource Definitions (CRD)
