@@ -11,7 +11,7 @@ RUN cd /src && \
     echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
 
 # final stage
-FROM ${SECOND_FROM_IMAGE}3067
+FROM ${SECOND_FROM_IMAGE}
 
 ##LABELS
 

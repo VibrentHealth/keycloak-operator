@@ -13,18 +13,6 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 
 // Only publish the helm chart and image on master branch build
 Boolean publishOperator = false
-chartYaml = readYaml file: "${chartDir}/Chart.yaml"
-if (branch == "fix-AC-123390") {
-    publishOperator = false
-
-    containers = [
-        ["name": 'vibrent-ops/keycloak-operator',
-         "pushWithBaseTag": false,
-         "additionalPublishTags": ["${chartYaml.version}", "${chartYaml.version}-${utils.getShortCommitSha()}"],
-         "pathToBuildContext": '',
-         "pathToDockerfile": 'Dockerfile']
-    ]
-}
 
 podTemplate(
         cloud: 'default',
@@ -35,6 +23,20 @@ podTemplate(
         idleTimeout: 30
 ) {
     node(label) {
+        checkout scm
+        chartYaml = readYaml file: "${chartDir}/Chart.yaml"
+        if (branch == "fix-AC-123390") {
+            publishOperator = false
+
+            containers = [
+                    ["name": 'vibrent-ops/keycloak-operator',
+                     "pushWithBaseTag": false,
+                     "additionalPublishTags": ["${chartYaml.version}", "${chartYaml.version}-${utils.getShortCommitSha()}"],
+                     "pathToBuildContext": '',
+                     "pathToDockerfile": 'Dockerfile']
+            ]
+        }
+
         ansiColor('xterm') {
             // NOTE: we use policyIgnoreList to skip docker policy. See README.md for explanation.
             ciPipeline (
