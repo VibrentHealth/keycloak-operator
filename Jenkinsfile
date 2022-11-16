@@ -1,7 +1,8 @@
-@Library('acadiaBuildTools@develop') _
-
+@Library('acadiaBuildTools@fix/configure-branch-tag') _
+import com.vibrenthealth.jenkinsLibrary.Utils
 import com.vibrenthealth.jenkinsLibrary.VibrentConstants
 
+def utils = new Utils(this)
 def project = "keycloak-operator"
 env.PROJECT = project
 def label = "${project}-${env.BRANCH_NAME.replaceAll(/\//, "-")}-${env.BUILD_NUMBER}"
@@ -12,11 +13,14 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 
 // Only publish the helm chart and image on master branch build
 Boolean publishOperator = false
-if (branch == "master") {
-    publishOperator = true
-  
+chartYaml = readYaml file: "${chartDir}/Chart.yaml"
+if (branch == "fix-AC-123390") {
+    publishOperator = false
+
     containers = [
         ["name": 'vibrent-ops/keycloak-operator',
+         "pushWithBaseTag": false,
+         "additionalPublishTags": ["${chartYaml.version}", "${chartYaml.version}-${utils.getShortCommitSha()}"],
          "pathToBuildContext": '',
          "pathToDockerfile": 'Dockerfile']
     ]
@@ -41,7 +45,6 @@ podTemplate(
                     checkout scm
 
                     if (publishOperator) {
-                        chartYaml = readYaml file: "${chartDir}/Chart.yaml"
                         charts << ["chart": "${chartDir}", "version": "${chartYaml.version}", "helmRepo": "vibrent-ops"]
                     }
                 },
