@@ -591,7 +591,7 @@ func (i *ClusterActionRunner) configureRealmRequiredActions(obj *v1alpha1.Keyclo
 
 	// Do comparisons
 	for _, alias := range requiredActionsToCompare {
-		err = i.compareAndUpdateRealmRequiredAction(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap, actionLogger)
+		err = i.compareAndUpdateRealmRequiredAction(realmName, desiredRealmRequiredActionsMap[alias], actualRealmRequiredActionsMap[alias], actionLogger)
 		if err != nil {
 			return err
 		}
@@ -642,7 +642,7 @@ func (i *ClusterActionRunner) configureRealmClientScopes(obj *v1alpha1.KeycloakR
 
 	// Do comparisons
 	for _, name := range clientScopesToCompare {
-		err = i.compareAndUpdateRealmClientScope(realmName, desiredRealmClientScopeMap[name], actualRealmClientScopeMap[name], actualRealmClientScopeMap, actionLogger)
+		err = i.compareAndUpdateRealmClientScope(realmName, desiredRealmClientScopeMap[name], actualRealmClientScopeMap[name], actionLogger)
 		if err != nil {
 			return err
 		}
@@ -758,7 +758,7 @@ func (i *ClusterActionRunner) configureRealmRoles(obj *v1alpha1.KeycloakRealm) e
  * First, compare the required action's `DefaultAction` and `Enabled`. If there is a difference, issue an UPDATE REQUIRED ACTION request.
  *
 **/
-func (i *ClusterActionRunner) compareAndUpdateRealmRequiredAction(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, allActualRequiredActionsMap map[string]*v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
+func (i *ClusterActionRunner) compareAndUpdateRealmRequiredAction(realmName string, dRequiredAction *v1alpha1.KeycloakAPIRequiredAction, aRequiredAction *v1alpha1.KeycloakAPIRequiredAction, actionLogger logr.Logger) error {
 	roleLogger := actionLogger.WithValues("Realm.RequiredActions", dRequiredAction.Alias)
 
 	if dRequiredAction.DefaultAction != aRequiredAction.DefaultAction || dRequiredAction.Enabled != aRequiredAction.Enabled {
@@ -791,7 +791,7 @@ func (i *ClusterActionRunner) compareAndUpdateRealmRequiredAction(realmName stri
  * Compare the client scope's `Description`, `Protocol`, `Name` and `Attributes`. If there is a difference, issue an UPDATE CLIENT SCOPE request.
  *
 **/
-func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, allActualClientScopesMap map[string]*v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
+func (i *ClusterActionRunner) compareAndUpdateRealmClientScope(realmName string, dClientScope *v1alpha1.KeycloakClientScope, aClientScope *v1alpha1.KeycloakClientScope, actionLogger logr.Logger) error {
 	roleLogger := actionLogger.WithValues("Realm.ClientScopes", dClientScope.Name)
 
 	if !genericEqualsRealmClientScopes(dClientScope, aClientScope) {
