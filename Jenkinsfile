@@ -1,4 +1,4 @@
-@Library('acadiaBuildTools@fix/configure-branch-tag') _
+@Library('acadiaBuildTools@fix/test-base-tag') _
 import com.vibrenthealth.jenkinsLibrary.Utils
 import com.vibrenthealth.jenkinsLibrary.VibrentConstants
 
