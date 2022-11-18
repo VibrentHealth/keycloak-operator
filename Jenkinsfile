@@ -1,4 +1,4 @@
-@Library('acadiaBuildTools@fix/test-base-tag') _
+@Library('acadiaBuildTools@develop') _
 import com.vibrenthealth.jenkinsLibrary.Utils
 import com.vibrenthealth.jenkinsLibrary.VibrentConstants
 
@@ -25,8 +25,8 @@ podTemplate(
     node(label) {
         checkout scm
         chartYaml = readYaml file: "${chartDir}/Chart.yaml"
-        if (branch == "PR-33") {
-            publishOperator = false
+        if (branch == "master") {
+            publishOperator = true
 
             containers = [
                     ["name": 'vibrent-ops/keycloak-operator',
