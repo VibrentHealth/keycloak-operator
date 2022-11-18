@@ -94,7 +94,7 @@ type KeycloakAPIRealm struct {
 
 	// Required Actions
 	// +optional
-	RequiredActions []KeycloakAPIRequiredActions `json:"requiredActions,omitempty"`
+	RequiredActions []KeycloakAPIRequiredAction `json:"requiredActions,omitempty"`
 
 	// Point keycloak to an external user provider to validate
 	// credentials or pull in identity information.
@@ -505,7 +505,7 @@ type KeycloakAPIAuthenticatorConfig struct {
 	ID string `json:"id,omitempty"`
 }
 
-type KeycloakAPIRequiredActions struct {
+type KeycloakAPIRequiredAction struct {
 	// Alias
 	Alias string `json:"alias"`
 

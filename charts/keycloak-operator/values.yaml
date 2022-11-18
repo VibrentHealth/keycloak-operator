@@ -7,7 +7,6 @@ replicaCount: 1
 image:
   registry: reg.vibrenthealth.com
   repository: vibrent-ops/keycloak-operator
-  tag: test
   pullPolicy: Always
   imagePullSecrets: reg.vibrenthealth.com
 

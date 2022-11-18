@@ -1,7 +1,8 @@
-@Library('acadiaBuildTools@feature/harbor') _
-
+@Library('acadiaBuildTools@develop') _
+import com.vibrenthealth.jenkinsLibrary.Utils
 import com.vibrenthealth.jenkinsLibrary.VibrentConstants
 
+def utils = new Utils(this)
 def project = "keycloak-operator"
 env.PROJECT = project
 def label = "${project}-${env.BRANCH_NAME.replaceAll(/\//, "-")}-${env.BUILD_NUMBER}"
@@ -12,15 +13,6 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 
 // Only publish the helm chart and image on master branch build
 Boolean publishOperator = false
-if (branch == "master") {
-    publishOperator = true
-  
-    containers = [
-        ["name": 'vibrent-ops/keycloak-operator',
-         "pathToBuildContext": '',
-         "pathToDockerfile": 'Dockerfile']
-    ]
-}
 
 podTemplate(
         cloud: 'default',
@@ -31,6 +23,20 @@ podTemplate(
         idleTimeout: 30
 ) {
     node(label) {
+        checkout scm
+        chartYaml = readYaml file: "${chartDir}/Chart.yaml"
+        if (branch == "master") {
+            publishOperator = true
+
+            containers = [
+                    ["name": 'vibrent-ops/keycloak-operator',
+                     "pushWithBaseTag": false,
+                     "additionalPublishTags": ["${chartYaml.version}", "${chartYaml.version}-${utils.getShortCommitSha()}"],
+                     "pathToBuildContext": '',
+                     "pathToDockerfile": 'Dockerfile']
+            ]
+        }
+
         ansiColor('xterm') {
             // NOTE: we use policyIgnoreList to skip docker policy. See README.md for explanation.
             ciPipeline (
@@ -41,7 +47,6 @@ podTemplate(
                     checkout scm
 
                     if (publishOperator) {
-                        chartYaml = readYaml file: "${chartDir}/Chart.yaml"
                         charts << ["chart": "${chartDir}", "version": "${chartYaml.version}", "helmRepo": "vibrent-ops"]
                     }
                 },
