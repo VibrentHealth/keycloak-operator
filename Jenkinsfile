@@ -25,7 +25,7 @@ podTemplate(
     node(label) {
         checkout scm
         chartYaml = readYaml file: "${chartDir}/Chart.yaml"
-        if (branch == "PR-33") {
+        if (branch == "master") {
             publishOperator = false
 
             containers = [
