@@ -175,9 +175,12 @@ type Domain struct {
 * contain the formatted lists of URLs that need to be merged into the client object on the keycloak server.
 **/
 func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
+	m := make(map[string][]string)
+	vibrentClusterActionsLog.Info(fmt.Sprintf("Retrieve apiDomain %v for client id %v", obj.Spec.APIDomain, obj.Spec.Client.ClientID))
 	response, err := http.Get(obj.Spec.APIDomain)
 	if err != nil {
 		fmt.Print(err.Error())
+		return m
 	}
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -196,7 +199,6 @@ func retrieveDomains(obj *v1alpha1.KeycloakClient) map[string][]string {
 		retrievedWebOrigins = append(retrievedWebOrigins, strings.ToLower(domains[k].URL))
 	}
 
-	m := make(map[string][]string)
 	m["redirectUris"] = retrievedRedirectURIs
 	m["webOrigins"] = retrievedWebOrigins
 
