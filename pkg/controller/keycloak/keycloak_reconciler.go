@@ -52,7 +52,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakProbesDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
-	desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
+	// desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
 
 	if cr.Spec.Migration.Backups.Enabled {
 		desired = desired.AddAction(i.getKeycloakBackupDesiredState(clusterState, cr))

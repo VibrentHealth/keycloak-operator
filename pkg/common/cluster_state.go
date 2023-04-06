@@ -149,10 +149,10 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
-	err = i.readPodDisruptionCurrentState(context, cr, controllerClient)
-	if err != nil {
-		return err
-	}
+	//err = i.readPodDisruptionCurrentState(context, cr, controllerClient)
+	//if err != nil {
+	//	return err
+	//}
 
 	if keyExists && routeKindExists {
 		err = i.readKeycloakRouteCurrentState(context, cr, controllerClient)
