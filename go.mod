@@ -2,7 +2,7 @@ module github.com/keycloak/keycloak-operator
 
 require (
 	github.com/coreos/prometheus-operator v0.40.0
-	github.com/go-logr/logr v0.2.0 // indirect
+	github.com/go-logr/logr v0.2.0
 	github.com/go-openapi/spec v0.19.7
 	github.com/integr8ly/grafana-operator/v3 v3.6.0
 	github.com/json-iterator/go v1.1.10
