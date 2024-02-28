@@ -1,12 +1,31 @@
 # Keycloak Operator
-A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak.
 
-## Vibrent Specific Documentation
-The Vibrent documentation for the keycloak operator can be found at the following conflunece page: [Keycloak Operator](https://agile.vignetcorp.com:8086/confluence/display/AC/Keycloak+Operator).
+At Vibrent, the `keycloak-operator` consumes 3 Custom Resource types (Keycloak, KeycloakRealm, KeycloakClient) and maintains Realm and Client configurations settings across a cluster.
+It does not deploy and maintain the Keycloak servers directly. The `Keycloak` CRD is only used as a pointer to some Keycloak and contains admin credentials the operator can use on that instance.
+This Operator implements the Operator SDK library, however because it's a "pre-1.0" version, you must view the legacy documentation (`v0.18.x`) ([link here](https://github.com/operator-framework/operator-sdk/blob/v0.18.x/website/content/en/docs/golang/quickstart.md)).
 
-### Vibrent Changelog
-Vibrent forked the Keycloak Operator to make the following custom changes. Broken up by production releases.
+## Vibrent Confluence Documentation
+The [Vibrent Confluence documentation for the Keycloak Operator](https://vibrenthealth.atlassian.net/wiki/spaces/AC/pages/1240864213/Keycloak+Operator)
+contains a collection of background links from 3rd party sources, additional details on the high level design, and instruction for locally development and making Pull Requests.
 
+## Vibrent Changelog
+This repository began as a fork of the Work-In-Progress keycloak-operator from the community Keycloak team.
+All customizations made on the fork are revisioned and documented below.
+This fork was consistently rebased to bring in changes from upstream, until the parent repository was archived when Keycloak migrated away from Wildfly.
+
+### Choose a new version for each Pull Request
+For any change being made, and new version must be created in the Pull Request and a brief description should be included here.
+> :warning: It looks the same, but this repo DOES NOT follow standard semantic versioning.
+
+#### Example X.Y.Z
+Instead of only be based on semantic versioning rules for "breaking change". The versioning scheme used here will increment the last numeral (`Z`) to indicate **this change is part of the same production release as the previous change**.
+When starting a new production chance, increment the first or middle numeral (`X` or `Y`) depending on the scope of changes for the entire release, and reset the last numeral (`Z`) to `0`.
+
+* The first numeral (`X`) represents a breaking change from the previous _production release_.
+* The middle numeral (`Y`) should still always represent a new _production release_, but one that will not have breaking change.
+* When a production release includes multiple Tickets or PRs, the last numeral (`Z`) is incremented for all Pull Requests after the first.
+
+### Release History
 #### Initial Release (1.6.X)
 * Support for custom attributes on Realms 
 * Realm update functionality
@@ -30,24 +49,27 @@ Vibrent forked the Keycloak Operator to make the following custom changes. Broke
 #### 1.8.X
 * New logic for updating "realm clientScopes" and "realm requiredActions" in the KeycloakRealm reconcile logic.
 
+#### 1.9.X
+* Remove support for a managed Keycloak PodDisruptionBudget: [AC-144568](https://vibrenthealth.atlassian.net/browse/AC-144568)
+
 ### Updating Custom Resource Definitions (CRD)
-Currently the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
+Currently, the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
 
 ### GitHub Actions
-Github actions are the primary CI mechanisms used to build and test the keycloak-operator. However, Github is not capable of publishing to our internal docker and helm repositories, so we also have a Jenkinsfile to handle that. See below.
+GitHub actions are the primary CI mechanisms used to build and test the keycloak-operator. However, GitHub is not capable of publishing to our internal docker and helm repositories, so we also have a Jenkinsfile to handle that. See below.
 
 1. ci.yml - ensures the tests pass by executing the following makefile commands: test/unit, test/e2e, and test/e2e-local-image
 2. go.yml - ensures the code compiles by executing the following makefile command: code/compile
 3. lint.yml - inspects the code by executing the following makefile commands: setup/linter and code/lint
 
 ### Jenkins Pipeline
-The Jenkins pipeline is only responsible for publishing the docker container(s) and helm chart for the keycloak operator into our internal docker registry and help chart repository after the github actions perform the other testing activities.
+The Jenkins pipeline is only responsible for publishing the docker container(s) and helm chart for the keycloak operator into our internal docker registry and help chart repository after the GitHub actions perform the other testing activities.
 
-The pipeline will lint the Helm Chart anytime it is ran, but will only publish the chart and docker image during a master branch build. Both the chart and docker image will be published to the vibrent-ops project.
+The pipeline will lint the Helm Chart anytime it is run, but will only publish the chart and docker image during a master branch build. Both the chart and docker image will be published to the vibrent-ops project.
 
 Once the docker image has been published you will need to update the new image tag in the cluster-management values.yaml file to the new version of the keycloak-operator.
 
-We have to do some tricky FROM statements in the Dockerfile because Github actions and Vibrent Jenkins pipelines cannot read from the same registries.
+We have to do some tricky FROM statements in the Dockerfile because GitHub actions and Vibrent Jenkins pipelines cannot read from the same registries.
 
 The pipeline has been updated to ignore the Dockerfiles during the 'Validate Docker Policies' step in the 'Compliance Stage'. The docker policy validation fails because the Dockerfile's FROM is dynamically built using an ARG (see Dockerfile below). Even though we use a trusted repository the validation fails stating we must use a trusted repository. 
 
