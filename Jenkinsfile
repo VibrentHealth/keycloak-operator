@@ -19,7 +19,6 @@ podTemplate(
         name: label,
         label: label,
         containers: kubeUtils.getCiContainers(containerList: ["kubectl", "docker", "helm", "python"]),
-        volumes: [hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')],
         idleTimeout: 30
 ) {
     node(label) {
