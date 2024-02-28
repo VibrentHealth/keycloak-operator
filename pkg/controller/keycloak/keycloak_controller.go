@@ -7,8 +7,6 @@ import (
 
 	"github.com/keycloak/keycloak-operator/version"
 
-	v1beta12 "k8s.io/api/policy/v1beta1"
-
 	"github.com/keycloak/keycloak-operator/pkg/model"
 
 	"k8s.io/client-go/tools/record"
@@ -101,10 +99,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if err := common.WatchSecondaryResource(c, ControllerName, common.PersistentVolumeClaimKind, &corev1.PersistentVolumeClaim{}, &kc.Keycloak{}); err != nil {
-		return err
-	}
-
-	if err := common.WatchSecondaryResource(c, ControllerName, common.PodDisruptionBudgetKind, &v1beta12.PodDisruptionBudget{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 

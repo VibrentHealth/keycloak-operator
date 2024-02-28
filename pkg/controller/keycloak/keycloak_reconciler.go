@@ -52,7 +52,6 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakProbesDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
-	desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
 
 	if cr.Spec.Migration.Backups.Enabled {
 		desired = desired.AddAction(i.getKeycloakBackupDesiredState(clusterState, cr))
@@ -387,22 +386,6 @@ func (i *KeycloakReconciler) getPostgresqlServiceEndpointsDesiredState(clusterSt
 		Ref: model.PostgresqlServiceEndpointsReconciled(cr, clusterState.PostgresqlServiceEndpoints, clusterState.DatabaseSecret),
 		Msg: "Update External Database Service Endpoints",
 	}
-}
-
-func (i *KeycloakReconciler) getPodDisruptionBudgetDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	if cr.Spec.PodDisruptionBudget.Enabled {
-		if clusterState.PodDisruptionBudget == nil {
-			return common.GenericCreateAction{
-				Ref: model.PodDisruptionBudget(cr),
-				Msg: "Create PodDisruptionBudget",
-			}
-		}
-		return common.GenericUpdateAction{
-			Ref: model.PodDisruptionBudgetReconciled(cr, clusterState.PodDisruptionBudget),
-			Msg: "Update PodDisruptionBudget",
-		}
-	}
-	return nil
 }
 
 func (i *KeycloakReconciler) getKeycloakBackupDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {

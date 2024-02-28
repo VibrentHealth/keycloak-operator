@@ -716,42 +716,6 @@ func TestKeycloakReconciler_Test_Recreate_Does_Not_Update_Existing_Credentials(t
 	assert.Equal(t, password, secret.Data[model.AdminPasswordProperty])
 }
 
-func TestKeycloakReconciler_Test_Should_Create_PDB(t *testing.T) {
-	// given
-	cr := &v1alpha1.Keycloak{}
-	cr.Spec.PodDisruptionBudget.Enabled = true
-
-	currentState := common.NewClusterState()
-
-	// when
-	reconciler := NewKeycloakReconciler()
-	desiredState := reconciler.Reconcile(currentState, cr)
-
-	// then
-	assert.Equal(t, len(desiredState), 10)
-	assert.IsType(t, common.GenericCreateAction{}, desiredState[9])
-	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericCreateAction).Ref)
-}
-
-func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
-	// given
-	cr := &v1alpha1.Keycloak{}
-	cr.Spec.PodDisruptionBudget.Enabled = true
-
-	currentState := &common.ClusterState{
-		PodDisruptionBudget: model.PodDisruptionBudget(cr),
-	}
-
-	// when
-	reconciler := NewKeycloakReconciler()
-	desiredState := reconciler.Reconcile(currentState, cr)
-
-	// then
-	assert.Equal(t, len(desiredState), 10)
-	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
-	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericUpdateAction).Ref)
-}
-
 func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}

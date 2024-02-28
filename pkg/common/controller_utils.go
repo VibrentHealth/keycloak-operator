@@ -24,7 +24,6 @@ const (
 	IngressKind               = "Ingress"
 	DeploymentKind            = "Deployment"
 	PersistentVolumeClaimKind = "PersistentVolumeClaim"
-	PodDisruptionBudgetKind   = "PodDisruptionBudget"
 	OpenShiftAPIServerKind    = "OpenShiftAPIServer"
 )
 
