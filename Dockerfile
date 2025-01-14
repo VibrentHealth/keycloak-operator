@@ -1,6 +1,6 @@
 # See README.md for how we alter the image repository based for Github actions and internal Jenkins pipeline
-ARG FIRST_FROM_IMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13
-ARG SECOND_FROM_IMAGE=harbor.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
+ARG FIRST_FROM_IMAGE=artifacts.ssk8s.vibrenthealth.com/dockerhub/openshift/origin-release:golang-1.13
+ARG SECOND_FROM_IMAGE=artifacts.ssk8s.vibrenthealth.com/dockerhub/coolbeevip/ubi8-ubi-minimal:latest
 FROM ${FIRST_FROM_IMAGE} AS build-env
 
 COPY . /src/
