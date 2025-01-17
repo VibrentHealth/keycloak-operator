@@ -52,6 +52,9 @@ When starting a new production chance, increment the first or middle numeral (`X
 #### 1.9.X
 * Remove support for a managed Keycloak PodDisruptionBudget: [AC-144568](https://vibrenthealth.atlassian.net/browse/AC-144568)
 
+#### 2.0.X
+* Migrate docker repository and KC's dependency to the new Harbor instance.https://vibrenthealth.atlassian.net/browse/AC-150267
+
 ### Updating Custom Resource Definitions (CRD)
 Currently, the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.
 

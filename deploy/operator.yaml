@@ -16,7 +16,7 @@ spec:
       containers:
         - name: keycloak-operator
           # When developing operator changes, build a new docker image and update this reference i.e. keycloak-operator:latest
-          image: harbor.ssk8s.vibrenthealth.com/vibrent-ops/keycloak-operator:master
+          image: artifacts.ssk8s.vibrenthealth.com/vibrent-ops/keycloak-operator:master
           command:
           - keycloak-operator
           imagePullPolicy: Never
@@ -38,4 +38,4 @@ spec:
             - name: SYNC_PERIOD
               value: "30m"
       imagePullSecrets:
-        - name: harbor-ssk8s-vibrenthealth-com-vibrent-ops-read-only
+        - name: artifacts-ssk8s-vibrenthealth-com-vibrent-ops-read-only
