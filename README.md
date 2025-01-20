@@ -52,7 +52,7 @@ When starting a new production chance, increment the first or middle numeral (`X
 #### 1.9.X
 * Remove support for a managed Keycloak PodDisruptionBudget: [AC-144568](https://vibrenthealth.atlassian.net/browse/AC-144568)
 
-#### 2.0.X
+#### 1.10.X
 * Migrate docker repository and KC's dependency to the new Harbor instance.https://vibrenthealth.atlassian.net/browse/AC-150267
 
 ### Updating Custom Resource Definitions (CRD)
