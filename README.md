@@ -46,14 +46,17 @@ When starting a new production chance, increment the first or middle numeral (`X
 * New logic for updating "realm roles" in the KeycloakRealm reconcile logic.
 * New logic for updating custom Authentication Flows used for participant login, registration, and password reset (Not all types of update are supported).
 
-#### 1.8.X
+#### 1.8.0
 * New logic for updating "realm clientScopes" and "realm requiredActions" in the KeycloakRealm reconcile logic.
 
-#### 1.9.X
+#### 1.9.0
 * Remove support for a managed Keycloak PodDisruptionBudget: [AC-144568](https://vibrenthealth.atlassian.net/browse/AC-144568)
 
-#### 1.10.X
+#### 1.10.0
 * Migrate docker repository and KC's dependency to the new Harbor instance.https://vibrenthealth.atlassian.net/browse/AC-150267
+
+#### 1.10.1
+* Update coordinates of Dockerfile base image to official RedHat (through Vibrent proxy)
 
 ### Updating Custom Resource Definitions (CRD)
 Currently, the CRDs in the Helm Chart are exact copies of the CRDs found in the /deploy/crds directory. Therefore, when updating a CRD you must replace the appropriate CRD found in /charts/keycloak-operator/crds with the updated CRD to ensure the Helm Chart contains the most current updates when deployed.

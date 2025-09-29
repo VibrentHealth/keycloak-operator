@@ -15,7 +15,7 @@ def branch = env.BRANCH_NAME.replace(/\//, '-')
 Boolean publishOperator = false
 
 podTemplate(
-        cloud: 'default',
+        cloud: 'bldk8s',
         name: label,
         label: label,
         containers: kubeUtils.getCiContainers(containerList: ["kubectl", "docker", "helm", "python"]),
